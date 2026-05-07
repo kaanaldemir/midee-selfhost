@@ -56,15 +56,14 @@ function isoDay(value) {
 
 const contentFiles = walkMd(contentDir)
 const urls = [
-  { loc: 'https://midee.app/', lastmod: today, changefreq: 'daily', priority: '1.0' },
-  { loc: 'https://midee.app/blog/', lastmod: today, changefreq: 'weekly', priority: '0.7' },
+  { loc: 'https://piano.kaanaldemir.com/', lastmod: today, changefreq: 'daily', priority: '1.0' },
 ]
 
 for (const file of contentFiles) {
   const { path, date, modified } = readMeta(file)
   if (!path) continue
   urls.push({
-    loc: `https://midee.app${path}`,
+    loc: `https://piano.kaanaldemir.com${path}`,
     lastmod: isoDay(modified ?? date),
     changefreq: path.startsWith('/blog/') ? 'monthly' : 'weekly',
     priority: path.startsWith('/blog/') ? '0.7' : '0.8',

@@ -55,7 +55,7 @@ export function PlayMode() {
     trackPanel.render(midi)
     dropzone.hide()
     keyboardInput.enable()
-    document.title = `${midi.name} · midee`
+    document.title = `${midi.name} · Piano Studio`
   })
 
   return null

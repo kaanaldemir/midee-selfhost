@@ -26,7 +26,7 @@ export async function encodeCapturedEvents(
   const { Midi } = await loadMidiModule()
   const bpm = opts.bpm ?? 120
   const trackName = opts.trackName ?? 'Performance'
-  const midiName = opts.midiName ?? 'midee capture'
+  const midiName = opts.midiName ?? 'Piano Studio capture'
 
   const lastEventTime = events.length === 0 ? 0 : events[events.length - 1]!.time
   const orphanCloseAt = opts.closeOrphansAt ?? lastEventTime

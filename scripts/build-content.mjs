@@ -21,7 +21,7 @@ const layout = readFileSync(resolve(contentDir, '_layout.html'), 'utf8')
 // ~360 ms render-blocking on first load.
 const { fontFaces, fontPreload } = renderFontTags(resolve(distDir, 'assets'))
 
-const SITE = 'https://midee.app'
+const SITE = 'https://piano.kaanaldemir.com'
 
 marked.setOptions({ gfm: true, breaks: false })
 
@@ -82,7 +82,7 @@ function buildJsonLd({ data, html }) {
     author: { '@type': 'Person', name: 'Aayush Dutt' },
     publisher: {
       '@type': 'Organization',
-      name: 'midee',
+      name: 'Piano Studio',
       url: SITE,
     },
   }
@@ -104,7 +104,7 @@ function buildJsonLd({ data, html }) {
 // trail that Google shows above a result's URL.
 function buildBreadcrumbJsonLd({ data }) {
   const items = [
-    { '@type': 'ListItem', position: 1, name: 'midee', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 1, name: 'Piano Studio', item: `${SITE}/` },
   ]
   if (data.path.startsWith('/blog/')) {
     items.push({ '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE}/blog/` })

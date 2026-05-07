@@ -14,7 +14,7 @@ import { resolve, join, dirname, extname } from 'node:path'
 
 const root = process.cwd()
 const distDir = resolve(root, 'dist')
-const SITE = 'https://midee.app'
+const SITE = 'https://piano.kaanaldemir.com'
 
 function walkHtml(dir, acc = []) {
   for (const entry of readdirSync(dir)) {
@@ -58,7 +58,7 @@ function resolveLocal(ref, fromFile) {
   if (ref.startsWith('mailto:')) return null
   if (ref.startsWith('tel:')) return null
   if (ref.startsWith('javascript:')) return null
-  // Canonicalize absolute midee.app URLs into root-relative
+  // Canonicalize same-origin absolute URLs into root-relative
   if (ref.startsWith(SITE)) ref = ref.slice(SITE.length) || '/'
   // Skip any remaining external URL
   if (/^https?:\/\//.test(ref)) return null

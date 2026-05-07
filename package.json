@@ -1,5 +1,5 @@
 {
-  "name": "midee",
+  "name": "piano-studio",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:selfhost": "tsc && vite build && node scripts/build-content.mjs && node scripts/build-og.mjs && node scripts/stamp-sitemap.mjs && node scripts/check-links.mjs",
-    "postbuild": "node scripts/build-content.mjs && node scripts/build-og.mjs && node scripts/stamp-sitemap.mjs && node scripts/check-links.mjs && node scripts/upload-sourcemaps.mjs",
+    "postbuild": "node scripts/check-links.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src",

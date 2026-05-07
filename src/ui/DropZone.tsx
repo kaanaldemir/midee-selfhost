@@ -28,7 +28,6 @@ function hasFiles(e: DragEvent): boolean {
 interface DropZoneProps {
   onDrop: DropHandler
   onLiveMode?: (() => void) | undefined
-  onLearnMode?: (() => void) | undefined
   onSample?: SampleHandler | undefined
   hidden: () => boolean
   midiStatus: () => { status: MidiDeviceStatus; deviceName: string }
@@ -148,20 +147,6 @@ function DropZoneView(props: DropZoneProps) {
               </button>
             )}
           </Show>
-          <Show when={props.onLearnMode}>
-            {(cb) => (
-              <button
-                class="home-secondary-btn home-secondary-btn--learn"
-                id="home-learn"
-                type="button"
-                onClick={() => cb()()}
-              >
-                <span innerHTML={icons.practice(13)} />
-                <span>{t('home.cta.learn.title')}</span>
-                <span class="home-learn-badge">New</span>
-              </button>
-            )}
-          </Show>
         </div>
 
         <div class="home-samples">
@@ -179,33 +164,6 @@ function DropZoneView(props: DropZoneProps) {
           </div>
           <div class="home-drop-hint" innerHTML={t('home.dropHint.html')} />
         </div>
-        <nav class="home-meta-links" aria-label={t('home.metaLinks.aria')}>
-          <a
-            href="/blog/"
-            class="home-meta-link"
-            aria-label={t('home.metaLink.blog')}
-            data-tip={t('home.metaLink.blog')}
-            innerHTML={icons.blog()}
-          />
-          <a
-            href="https://github.com/aayushdutt/midee"
-            class="home-meta-link"
-            aria-label={t('home.metaLink.github')}
-            data-tip={t('home.metaLink.github')}
-            target="_blank"
-            rel="noopener noreferrer"
-            innerHTML={icons.github()}
-          />
-          <a
-            href="https://discord.gg/7As2NHHd"
-            class="home-meta-link"
-            aria-label={t('home.metaLink.discord')}
-            data-tip={t('home.metaLink.discord')}
-            target="_blank"
-            rel="noopener noreferrer"
-            innerHTML={icons.discord()}
-          />
-        </nav>
         <input
           type="file"
           id="midi-input"
@@ -235,7 +193,6 @@ export class DropZone {
     onDrop: DropHandler,
     onLiveMode?: () => void,
     onSample?: SampleHandler,
-    onLearnMode?: () => void,
   ) {
     const [hidden, setHidden] = createSignal(false)
     const [status, setStatus] = createSignal<{
@@ -253,7 +210,6 @@ export class DropZone {
         <DropZoneView
           onDrop={onDrop}
           onLiveMode={onLiveMode}
-          onLearnMode={onLearnMode}
           onSample={onSample}
           hidden={hidden}
           midiStatus={status}

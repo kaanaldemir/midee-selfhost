@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://midee.app/sitemap.xml
+Sitemap: https://piano.kaanaldemir.com/sitemap.xml
