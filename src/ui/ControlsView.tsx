@@ -28,7 +28,6 @@ export interface TopStripProps {
   onTracks: () => void
   onMidi: () => void
   onRecord: () => void
-  onLearnThis: () => void
   registerEl: (el: HTMLElement) => void
   registerTracksBtn: (el: HTMLButtonElement) => void
 }
@@ -99,7 +98,7 @@ export interface KeyHintProps {
 export function TopStripView(props: TopStripProps) {
   const activeMode = (): string => {
     const m = props.mode()
-    if (m === 'play' || m === 'live' || m === 'learn') return m
+    if (m === 'play' || m === 'live') return m
     return 'none'
   }
   return (
@@ -123,7 +122,7 @@ export function TopStripView(props: TopStripProps) {
         aria-label={t('home.aria')}
         data-tip={t('topStrip.home')}
         onClick={() => props.onHome()}
-        innerHTML={`${icons.wordmark()}<span class="ts-home-name">midee</span>`}
+        innerHTML={`${icons.wordmark()}<span class="ts-home-name">Piano Studio</span>`}
       />
 
       <div
@@ -157,19 +156,6 @@ export function TopStripView(props: TopStripProps) {
         >
           <span class="ts-mode-icon" aria-hidden="true" innerHTML={icons.modeLive()} />
           <span class="ts-mode-label">{t('topStrip.mode.live.label')}</span>
-        </button>
-        <button
-          class="ts-mode-seg"
-          classList={{ 'is-active': props.mode() === 'learn' }}
-          id="ts-mode-learn"
-          type="button"
-          role="tab"
-          aria-selected={props.mode() === 'learn' ? 'true' : 'false'}
-          data-tip={t('topStrip.modeLearn')}
-          onClick={() => props.onMode('learn')}
-        >
-          <span class="ts-mode-icon" aria-hidden="true" innerHTML={icons.practice()} />
-          <span class="ts-mode-label">{t('topStrip.mode.learn.label')}</span>
         </button>
         <span class="ts-mode-thumb" aria-hidden="true" />
       </div>
@@ -219,20 +205,6 @@ export function TopStripView(props: TopStripProps) {
         >
           <span innerHTML={icons.tracks()} />
           <span>{t('topStrip.tracks')}</span>
-        </button>
-        <button
-          class="ts-pill ts-pill--file"
-          classList={{
-            hidden: !(props.mode() === 'play' && props.hasFile() && !props.isLoadingFile()),
-          }}
-          id="ts-learn-this"
-          type="button"
-          aria-label={t('topStrip.learnThis.aria')}
-          data-tip={t('topStrip.learnThis.tip')}
-          onClick={() => props.onLearnThis()}
-        >
-          <span innerHTML={icons.practice()} />
-          <span>{t('topStrip.learnThis.label')}</span>
         </button>
         <span id="ts-instrument-slot" />
         <div class="ts-sep" aria-hidden="true" />

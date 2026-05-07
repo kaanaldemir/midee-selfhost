@@ -19,7 +19,7 @@ export const en = {
   // translator-controlled (French/Spanish/Portuguese put the emphasised
   // noun in different positions). No user-controlled interpolation, so no
   // XSS risk.
-  'home.kicker': 'midee · MIDI visualizer',
+  'home.kicker': 'Piano Studio · MIDI visualizer',
   'home.title.html': 'Play <em>notes</em>,<br/>see them bloom.',
   'home.subtitle':
     'Open a MIDI file to animate it, or go live and play with your keyboard, mouse, or a MIDI controller.',
@@ -38,8 +38,8 @@ export const en = {
   'home.metaLink.blog': 'Read the blog',
   'home.metaLink.github': 'Source on GitHub',
   'home.metaLink.discord': 'Join the Discord community',
-  'home.metaLinks.aria': 'midee links',
-  'home.aria': 'midee home',
+  'home.metaLinks.aria': 'Piano Studio links',
+  'home.aria': 'Piano Studio home',
 
   // ── Top strip (primary nav) ─────────────────────────────────
   'topStrip.home': 'Home',
@@ -223,9 +223,9 @@ export const en = {
   'modeError.retry': 'Try again',
 
   // ── Document title (browser tab) ───────────────────────────
-  'doc.title.home': 'midee — drop a MIDI, watch it sing',
-  'doc.title.live': 'midee · live',
-  'doc.title.learn': 'midee · learn',
+  'doc.title.home': 'Piano Studio',
+  'doc.title.live': 'Piano Studio · live',
+  'doc.title.learn': 'Piano Studio · learn',
 
   // ── Learn hub ───────────────────────────────────────────────
   'learn.hub.recommended': 'Recommended',
@@ -399,7 +399,7 @@ export const en = {
   'learn.summary.next': 'Next',
 
   // Coming-soon surface (Learn mode disabled via feature flag).
-  'learn.soon.docTitle': 'Learn · midee',
+  'learn.soon.docTitle': 'Learn · Piano Studio',
   'learn.soon.badge': 'Coming soon',
   'learn.soon.title.html': 'Practice, <em>gamified</em>.',
   'learn.soon.body': "Streaks, levels, and a piano roll that knows when you're guessing.",
@@ -448,8 +448,8 @@ export const en = {
 
   // ── Toasts / confirmations ─────────────────────────────────
   'toast.export.ready': '{filename} ready',
-  'toast.session.saved': 'midee-session.mid · {seconds}s',
-  'toast.loop.saved': 'midee-loop.mid',
+  'toast.session.saved': 'piano-session.mid · {seconds}s',
+  'toast.loop.saved': 'piano-loop.mid',
   'toast.recording.empty': 'Nothing recorded — play a few notes while Record is on.',
 
   // ── Onboarding ─────────────────────────────────────────────

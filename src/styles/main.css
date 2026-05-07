@@ -501,27 +501,6 @@ body {
   border-color: rgba(255, 255, 255, 0.14);
 }
 
-.home-secondary-btn--learn {
-  position: relative;
-}
-
-.home-learn-badge {
-  position: absolute;
-  top: -7px;
-  right: -4px;
-  font-size: 8.5px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: #fff;
-  background: var(--accent);
-  border-radius: 4px;
-  padding: 2px 6px;
-  line-height: 1.5;
-  box-shadow: 0 2px 8px var(--accent-glow);
-  pointer-events: none;
-}
-
 .home-midi-status {
   display: inline-flex;
   align-items: center;
@@ -1007,10 +986,7 @@ body {
   top: 3px;
   bottom: 3px;
   left: 3px;
-  /* Three segments now (Play / Live / Learn). The thumb is one-third of the
-     available width (minus the 3px left inset that applies only once). Each
-     active state translates by a full segment width. */
-  width: calc((100% - 6px) / 3);
+  width: calc((100% - 6px) / 2);
   border-radius: var(--r-pill);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
   box-shadow:
@@ -1032,11 +1008,6 @@ body {
 .ts-mode-switch[data-active="live"] .ts-mode-thumb {
   opacity: 1;
   transform: translateX(100%);
-}
-
-.ts-mode-switch[data-active="learn"] .ts-mode-thumb {
-  opacity: 1;
-  transform: translateX(200%);
 }
 
 /* ─────────────────────────────────────────

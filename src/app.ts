@@ -279,7 +279,6 @@ export class App {
           void this.loadSample(sampleId)
         }
       },
-      () => this.store.setState('mode', 'learn'),
     )
 
     this.controls = new Controls({
@@ -301,7 +300,6 @@ export class App {
       },
       onOpenFile: () => this.openFilePicker(),
       onModeRequest: (mode) => this.requestMode(mode),
-      onLearnThis: () => this.enterLearnWithCurrentMidi(),
       onHome: () => this.enterHomeMode(),
       onInstrumentCycle: () => this.cycleInstrument(),
       onParticleCycle: () => this.cycleParticleStyle(),
@@ -953,7 +951,7 @@ export class App {
       }
     }
 
-    const filename = settings.output === 'audio-only' ? 'midee.m4a' : 'midee.mp4'
+    const filename = settings.output === 'audio-only' ? 'piano-studio.m4a' : 'piano-studio.mp4'
 
     try {
       let audioBuffer: AudioBuffer | undefined
@@ -1229,10 +1227,10 @@ export class App {
       const bytes = await encodeCapturedEvents(pending.events, {
         bpm: this.metronomeBpm(),
         closeOrphansAt: pending.duration,
-        midiName: 'midee session',
+        midiName: 'Piano Studio session',
         trackName: 'Live performance',
       })
-      triggerMidiDownload(bytes, 'midee-session.mid')
+      triggerMidiDownload(bytes, 'piano-session.mid')
       this.showSuccess(`↓ ${t('toast.session.saved', { seconds: Math.round(pending.duration) })}`)
       this.pendingSession = null
       return
@@ -1264,7 +1262,7 @@ export class App {
     this.renderer.loadMidi(midi)
     this.trackPanel.render(midi)
     this.dropzone.hide()
-    document.title = `${midi.name} · midee`
+    document.title = `${midi.name} · Piano Studio`
   }
 
   private async saveLoopAsMidi(): Promise<void> {
@@ -1273,10 +1271,10 @@ export class App {
     const bytes = await encodeCapturedEvents(snap.events, {
       bpm: this.metronomeBpm(),
       closeOrphansAt: snap.duration,
-      midiName: 'midee loop',
+      midiName: 'Piano Studio loop',
       trackName: 'Loop',
     })
-    triggerMidiDownload(bytes, 'midee-loop.mid')
+    triggerMidiDownload(bytes, 'piano-loop.mid')
     this.showSuccess(`↓ ${t('toast.loop.saved')}`)
     track('loop_saved', {
       duration_s: Math.round(snap.duration),

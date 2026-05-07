@@ -2,7 +2,7 @@ import type { Messages } from './en'
 
 const es: Messages = {
   // ── Home / dropzone ─────────────────────────────────────────
-  'home.kicker': 'midee · visualizador MIDI',
+  'home.kicker': 'Piano Studio · visualizador MIDI',
   'home.title.html': 'Toca <em>notas</em>,<br/>míralas florecer.',
   'home.subtitle':
     'Abre un archivo MIDI para visualizarlo, o toca en vivo con tu teclado, ratón o un controlador MIDI.',
@@ -21,8 +21,8 @@ const es: Messages = {
   'home.metaLink.blog': 'Leer el blog',
   'home.metaLink.github': 'Código en GitHub',
   'home.metaLink.discord': 'Únete a la comunidad de Discord',
-  'home.metaLinks.aria': 'enlaces de midee',
-  'home.aria': 'inicio de midee',
+  'home.metaLinks.aria': 'enlaces de Piano Studio',
+  'home.aria': 'inicio de Piano Studio',
 
   // ── Top strip (primary nav) ─────────────────────────────────
   'topStrip.home': 'Inicio',
@@ -198,9 +198,9 @@ const es: Messages = {
   'modeError.retry': 'Reintentar',
 
   // ── Document title ──────────────────────────────────────────
-  'doc.title.home': 'midee — suelta un MIDI, míralo cantar',
-  'doc.title.live': 'midee · en vivo',
-  'doc.title.learn': 'midee · aprender',
+  'doc.title.home': 'Piano Studio',
+  'doc.title.live': 'Piano Studio · en vivo',
+  'doc.title.learn': 'Piano Studio · aprender',
 
   // ── Learn hub ───────────────────────────────────────────────
   'learn.hub.recommended': 'Recomendado',
@@ -366,7 +366,7 @@ const es: Messages = {
   'learn.summary.again': 'Otra vez',
   'learn.summary.next': 'Siguiente',
 
-  'learn.soon.docTitle': 'Aprender · midee',
+  'learn.soon.docTitle': 'Aprender · Piano Studio',
   'learn.soon.badge': 'Próximamente',
   'learn.soon.title.html': 'Practica, <em>gamificado</em>.',
   'learn.soon.body': 'Rachas, niveles y un piano roll que sabe cuándo estás adivinando.',
@@ -412,8 +412,8 @@ const es: Messages = {
 
   // ── Toasts / confirmations ─────────────────────────────────
   'toast.export.ready': '{filename} listo',
-  'toast.session.saved': 'midee-session.mid · {seconds}s',
-  'toast.loop.saved': 'midee-loop.mid',
+  'toast.session.saved': 'piano-session.mid · {seconds}s',
+  'toast.loop.saved': 'piano-loop.mid',
   'toast.recording.empty': 'Nada grabado — toca algunas notas mientras Grabar está activo.',
 
   'onboarding.localeDetected': 'Mostrando en {language} · cambia en Apariencia',
