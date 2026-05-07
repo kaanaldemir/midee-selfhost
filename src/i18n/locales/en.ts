@@ -19,7 +19,7 @@ export const en = {
   // translator-controlled (French/Spanish/Portuguese put the emphasised
   // noun in different positions). No user-controlled interpolation, so no
   // XSS risk.
-  'home.kicker': 'midee · MIDI visualizer',
+  'home.kicker': 'MIDI visualizer',
   'home.title.html': 'Play <em>notes</em>,<br/>see them bloom.',
   'home.subtitle':
     'Open a MIDI file to animate it, or go live and play with your keyboard, mouse, or a MIDI controller.',

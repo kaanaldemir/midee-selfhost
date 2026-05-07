@@ -123,7 +123,7 @@ export function TopStripView(props: TopStripProps) {
         aria-label={t('home.aria')}
         data-tip={t('topStrip.home')}
         onClick={() => props.onHome()}
-        innerHTML={`${icons.wordmark()}<span class="ts-home-name">midee</span>`}
+        innerHTML={`${icons.wordmark()}<span class="ts-home-name">Home</span>`}
       />
 
       <div
@@ -157,19 +157,6 @@ export function TopStripView(props: TopStripProps) {
         >
           <span class="ts-mode-icon" aria-hidden="true" innerHTML={icons.modeLive()} />
           <span class="ts-mode-label">{t('topStrip.mode.live.label')}</span>
-        </button>
-        <button
-          class="ts-mode-seg"
-          classList={{ 'is-active': props.mode() === 'learn' }}
-          id="ts-mode-learn"
-          type="button"
-          role="tab"
-          aria-selected={props.mode() === 'learn' ? 'true' : 'false'}
-          data-tip={t('topStrip.modeLearn')}
-          onClick={() => props.onMode('learn')}
-        >
-          <span class="ts-mode-icon" aria-hidden="true" innerHTML={icons.practice()} />
-          <span class="ts-mode-label">{t('topStrip.mode.learn.label')}</span>
         </button>
         <span class="ts-mode-thumb" aria-hidden="true" />
       </div>

@@ -148,20 +148,6 @@ function DropZoneView(props: DropZoneProps) {
               </button>
             )}
           </Show>
-          <Show when={props.onLearnMode}>
-            {(cb) => (
-              <button
-                class="home-secondary-btn home-secondary-btn--learn"
-                id="home-learn"
-                type="button"
-                onClick={() => cb()()}
-              >
-                <span innerHTML={icons.practice(13)} />
-                <span>{t('home.cta.learn.title')}</span>
-                <span class="home-learn-badge">New</span>
-              </button>
-            )}
-          </Show>
         </div>
 
         <div class="home-samples">
