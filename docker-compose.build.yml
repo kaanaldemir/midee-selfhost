@@ -1,0 +1,6 @@
+services:
+  midee:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/kaanaldemir/midee-selfhost:latest

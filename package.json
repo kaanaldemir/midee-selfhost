@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:selfhost": "tsc && vite build && node scripts/build-content.mjs && node scripts/build-og.mjs && node scripts/stamp-sitemap.mjs && node scripts/check-links.mjs",
     "postbuild": "node scripts/build-content.mjs && node scripts/build-og.mjs && node scripts/stamp-sitemap.mjs && node scripts/check-links.mjs && node scripts/upload-sourcemaps.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

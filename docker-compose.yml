@@ -1,0 +1,9 @@
+name: midee
+
+services:
+  midee:
+    image: ghcr.io/kaanaldemir/midee-selfhost:latest
+    container_name: midee
+    restart: unless-stopped
+    ports:
+      - "8088:80"
