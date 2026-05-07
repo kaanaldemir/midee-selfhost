@@ -1,0 +1,39 @@
+name: piano-studio
+services:
+  piano-studio:
+    cpu_shares: 90
+    command: []
+    container_name: piano-studio
+    deploy:
+      resources:
+        limits:
+          memory: 16626532352
+        reservations:
+          devices: []
+    image: ghcr.io/kaanaldemir/midee-selfhost:latest
+    labels:
+      icon: https://raw.githubusercontent.com/kaanaldemir/midee-selfhost/master/zimaos/piano.png
+    ports:
+      - target: 80
+        published: "8088"
+        protocol: tcp
+    restart: unless-stopped
+    volumes: []
+    devices: []
+    cap_add: []
+    environment: []
+    network_mode: bridge
+    privileged: false
+x-casaos:
+  author: self
+  category: self
+  hostname: ""
+  icon: https://raw.githubusercontent.com/kaanaldemir/midee-selfhost/master/zimaos/piano.png
+  index: /
+  is_uncontrolled: false
+  port_map: "8088"
+  scheme: http
+  store_app_id: piano-studio
+  title:
+    custom: ""
+    en_us: Piano Studio
