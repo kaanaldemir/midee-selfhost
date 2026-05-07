@@ -19,14 +19,14 @@ export const en = {
   // translator-controlled (French/Spanish/Portuguese put the emphasised
   // noun in different positions). No user-controlled interpolation, so no
   // XSS risk.
-  'home.kicker': 'Piano Studio · MIDI visualizer',
+  'home.kicker': 'midee · MIDI visualizer',
   'home.title.html': 'Play <em>notes</em>,<br/>see them bloom.',
   'home.subtitle':
     'Open a MIDI file to animate it, or go live and play with your keyboard, mouse, or a MIDI controller.',
   'home.cta.openMidi': 'Open MIDI',
   'home.cta.playLive': 'Play live',
-  'home.cta.learn.title': 'Open MIDI',
-  'home.cta.learn.sub': 'Choose a file',
+  'home.cta.learn.title': 'Practice & learn',
+  'home.cta.learn.sub': 'Guided exercises · play-along pieces',
   'home.samples.label': 'or explore a sample',
   'home.dropHint.html':
     'Drop <code>.mid</code> anywhere · play with <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>…',
@@ -35,17 +35,17 @@ export const en = {
   'home.midi.blocked': 'Enable MIDI from the top bar',
   'home.midi.unavailable': 'Web MIDI unavailable in this browser',
   'home.midi.disconnected': 'No MIDI device — keyboard & mouse work too',
-  'home.metaLink.blog': 'More',
-  'home.metaLink.github': 'Source',
-  'home.metaLink.discord': 'Community',
-  'home.metaLinks.aria': 'Piano Studio links',
-  'home.aria': 'Piano Studio home',
+  'home.metaLink.blog': 'Read the blog',
+  'home.metaLink.github': 'Source on GitHub',
+  'home.metaLink.discord': 'Join the Discord community',
+  'home.metaLinks.aria': 'midee links',
+  'home.aria': 'midee home',
 
   // ── Top strip (primary nav) ─────────────────────────────────
   'topStrip.home': 'Home',
   'topStrip.modePlay': 'Play a MIDI file',
   'topStrip.modeLive': 'Play live',
-  'topStrip.modeLearn': 'Unavailable',
+  'topStrip.modeLearn': 'Learn · exercises, ear training, sight reading',
   'topStrip.openMidi': 'Open MIDI file',
   'topStrip.tracks': 'Tracks',
   'topStrip.midi': 'MIDI device',
@@ -54,11 +54,11 @@ export const en = {
   // Mode-pill visible labels (the longer descriptors live in `topStrip.mode*`).
   'topStrip.mode.play.label': 'Play',
   'topStrip.mode.live.label': 'Live',
-  'topStrip.mode.learn.label': 'More',
+  'topStrip.mode.learn.label': 'Learn',
   // "Learn this MIDI" CTA (only visible when a piece is loaded in Play).
-  'topStrip.learnThis.aria': 'Open MIDI',
-  'topStrip.learnThis.tip': 'Open MIDI',
-  'topStrip.learnThis.label': 'Open MIDI',
+  'topStrip.learnThis.aria': 'Learn this piece',
+  'topStrip.learnThis.tip': 'Practice this piece with wait-mode',
+  'topStrip.learnThis.label': 'Learn this piece',
   // Topbar context strip — kicker (small label) + title (main).
   'topStrip.context.ready.kicker': 'Ready',
   'topStrip.context.ready.title': 'Open MIDI or play live',
@@ -70,7 +70,7 @@ export const en = {
   'topStrip.context.play.kicker': 'Now playing',
   'topStrip.context.play.fallback': 'Open MIDI',
   'topStrip.context.learnSoon.kicker': 'Coming soon',
-  'topStrip.context.learnSoon.title': 'Unavailable',
+  'topStrip.context.learnSoon.title': 'Learn mode is on the way',
   'topStrip.context.learning.kicker': 'Learning',
   'topStrip.context.learn.kicker': 'Learn',
   'topStrip.context.learn.title': 'Exercises, ear training, sight reading',
@@ -223,9 +223,9 @@ export const en = {
   'modeError.retry': 'Try again',
 
   // ── Document title (browser tab) ───────────────────────────
-  'doc.title.home': 'Piano Studio',
-  'doc.title.live': 'Piano Studio · live',
-  'doc.title.learn': 'Piano Studio · learn',
+  'doc.title.home': 'midee — drop a MIDI, watch it sing',
+  'doc.title.live': 'midee · live',
+  'doc.title.learn': 'midee · learn',
 
   // ── Learn hub ───────────────────────────────────────────────
   'learn.hub.recommended': 'Recommended',
@@ -399,7 +399,7 @@ export const en = {
   'learn.summary.next': 'Next',
 
   // Coming-soon surface (Learn mode disabled via feature flag).
-  'learn.soon.docTitle': 'Learn · Piano Studio',
+  'learn.soon.docTitle': 'Learn · midee',
   'learn.soon.badge': 'Coming soon',
   'learn.soon.title.html': 'Practice, <em>gamified</em>.',
   'learn.soon.body': "Streaks, levels, and a piano roll that knows when you're guessing.",
@@ -448,8 +448,8 @@ export const en = {
 
   // ── Toasts / confirmations ─────────────────────────────────
   'toast.export.ready': '{filename} ready',
-  'toast.session.saved': 'piano-session.mid · {seconds}s',
-  'toast.loop.saved': 'piano-loop.mid',
+  'toast.session.saved': 'midee-session.mid · {seconds}s',
+  'toast.loop.saved': 'midee-loop.mid',
   'toast.recording.empty': 'Nothing recorded — play a few notes while Record is on.',
 
   // ── Onboarding ─────────────────────────────────────────────

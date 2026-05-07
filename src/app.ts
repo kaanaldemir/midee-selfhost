@@ -279,6 +279,7 @@ export class App {
           void this.loadSample(sampleId)
         }
       },
+      () => this.store.setState('mode', 'learn'),
     )
 
     this.controls = new Controls({
@@ -300,6 +301,7 @@ export class App {
       },
       onOpenFile: () => this.openFilePicker(),
       onModeRequest: (mode) => this.requestMode(mode),
+      onLearnThis: () => this.enterLearnWithCurrentMidi(),
       onHome: () => this.enterHomeMode(),
       onInstrumentCycle: () => this.cycleInstrument(),
       onParticleCycle: () => this.cycleParticleStyle(),
@@ -951,7 +953,7 @@ export class App {
       }
     }
 
-    const filename = settings.output === 'audio-only' ? 'piano-studio.m4a' : 'piano-studio.mp4'
+    const filename = settings.output === 'audio-only' ? 'midee.m4a' : 'midee.mp4'
 
     try {
       let audioBuffer: AudioBuffer | undefined
@@ -1123,6 +1125,17 @@ export class App {
       return
     }
     if (mode === 'learn') {
+      // Re-clicking Learn while already inside an exercise pops back to the
+      // hub. closeActiveExercise is idempotent (no-op when no runner) so this
+      // is safe to call regardless of prior state.
+      const lc = this.learnControllerHandle.peek()
+      if (this.store.state.mode === 'learn' && lc) {
+        lc.closeActiveExercise('abandoned')
+        return
+      }
+      // When VITE_ENABLE_LEARN_MODE is off, ModeSwitch shows the
+      // <LearnComingSoon/> marketing surface instead of <LearnMode/>.
+      this.store.setState('mode', 'learn')
       return
     }
     if (this.store.state.loadedMidi) {
@@ -1134,6 +1147,20 @@ export class App {
     // into Learn instead of opening it in Play. The user clicked Play; honor
     // that even if their mode hasn't flipped yet.
     this.openFilePicker('play')
+  }
+
+  // Hands the currently-loaded Play MIDI off to Learn and switches modes.
+  // Queueing on the controller (instead of relying on Learn re-reading
+  // `loadedMidi`) keeps Learn's MIDI store decoupled from Play's — the whole
+  // reason LearnController has its own `learnState` in the first place.
+  private enterLearnWithCurrentMidi(): void {
+    const midi = this.store.state.loadedMidi
+    if (!midi) return
+    track('learn_from_play', { duration_s: Math.round(midi.duration) })
+    void this.ensureLearnController().then((c) => {
+      c.queueMidi(midi)
+      this.store.setState('mode', 'learn')
+    })
   }
 
   // Thin delegators: each flips the store and lets Solid's mode shell run
@@ -1202,10 +1229,10 @@ export class App {
       const bytes = await encodeCapturedEvents(pending.events, {
         bpm: this.metronomeBpm(),
         closeOrphansAt: pending.duration,
-        midiName: 'Piano Studio session',
+        midiName: 'midee session',
         trackName: 'Live performance',
       })
-      triggerMidiDownload(bytes, 'piano-session.mid')
+      triggerMidiDownload(bytes, 'midee-session.mid')
       this.showSuccess(`↓ ${t('toast.session.saved', { seconds: Math.round(pending.duration) })}`)
       this.pendingSession = null
       return
@@ -1237,7 +1264,7 @@ export class App {
     this.renderer.loadMidi(midi)
     this.trackPanel.render(midi)
     this.dropzone.hide()
-    document.title = `${midi.name} · Piano Studio`
+    document.title = `${midi.name} · midee`
   }
 
   private async saveLoopAsMidi(): Promise<void> {
@@ -1246,10 +1273,10 @@ export class App {
     const bytes = await encodeCapturedEvents(snap.events, {
       bpm: this.metronomeBpm(),
       closeOrphansAt: snap.duration,
-      midiName: 'Piano Studio loop',
+      midiName: 'midee loop',
       trackName: 'Loop',
     })
-    triggerMidiDownload(bytes, 'piano-loop.mid')
+    triggerMidiDownload(bytes, 'midee-loop.mid')
     this.showSuccess(`↓ ${t('toast.loop.saved')}`)
     track('loop_saved', {
       duration_s: Math.round(snap.duration),
@@ -1520,7 +1547,7 @@ function trimAudioBuffer(audio: AudioBuffer, durationSec: number): AudioBuffer {
 // Falls back to a constant if the result is empty.
 function sanitiseFilename(name: string): string {
   const cleaned = name.replace(/[\\/:*?"<>|]+/g, ' ').trim()
-  return cleaned.length > 0 ? cleaned : 'piano-studio'
+  return cleaned.length > 0 ? cleaned : 'midee'
 }
 
 // Stable string for an active-pitch set so the chord overlay can short-circuit

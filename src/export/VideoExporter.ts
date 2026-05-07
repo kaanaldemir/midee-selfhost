@@ -224,7 +224,7 @@ export class VideoExporter {
       const buffer = bufferTarget.buffer
       if (!buffer) throw new Error('Export produced no file buffer')
       const blob = new Blob([buffer], { type: 'video/mp4' })
-      triggerDownload(URL.createObjectURL(blob), opts.filename ?? 'piano-studio.mp4')
+      triggerDownload(URL.createObjectURL(blob), opts.filename ?? 'midee.mp4')
       opts.onProgress?.('Saving', 1)
       opts.onProgress?.('Done', 1)
     } finally {
@@ -267,7 +267,7 @@ export class VideoExporter {
     const buffer = bufferTarget.buffer
     if (!buffer) throw new Error('Export produced no file buffer')
     const blob = new Blob([buffer], { type: 'audio/mp4' })
-    triggerDownload(URL.createObjectURL(blob), opts.filename ?? 'piano-studio.m4a')
+    triggerDownload(URL.createObjectURL(blob), opts.filename ?? 'midee.m4a')
     opts.onProgress?.('Saving', 1)
     opts.onProgress?.('Done', 1)
   }

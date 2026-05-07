@@ -10,8 +10,8 @@ import { type MessageKey, t } from '../i18n'
 // timer, anchor click, `dismissOn` flip) are equivalent for our purpose of
 // "introduce once".
 //
-// Preset wrappers live alongside this file for specific UI affordances, such
-// as `DragCoachmark` for the HUD drag handle.
+// Two presets live alongside this file: `LearnCoachmark` (Practice-this-piece
+// pill) and `DragCoachmark` (HUD drag handle).
 
 export type CoachmarkPlacement = 'above' | 'below'
 

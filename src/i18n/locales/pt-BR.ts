@@ -2,7 +2,7 @@ import type { Messages } from './en'
 
 const ptBR: Messages = {
   // ── Home / dropzone ─────────────────────────────────────────
-  'home.kicker': 'Piano Studio · visualizador MIDI',
+  'home.kicker': 'midee · visualizador MIDI',
   'home.title.html': 'Toque <em>notas</em>,<br/>veja-as florescer.',
   'home.subtitle':
     'Abra um arquivo MIDI para visualizá-lo, ou toque ao vivo com seu teclado, mouse ou um controlador MIDI.',
@@ -18,11 +18,11 @@ const ptBR: Messages = {
   'home.midi.blocked': 'Ative o MIDI na barra superior',
   'home.midi.unavailable': 'Web MIDI indisponível neste navegador',
   'home.midi.disconnected': 'Sem dispositivo MIDI — teclado e mouse também funcionam',
-  'home.metaLink.blog': 'Mais',
-  'home.metaLink.github': 'Fonte',
-  'home.metaLink.discord': 'Comunidade',
-  'home.metaLinks.aria': 'links do Piano Studio',
-  'home.aria': 'início do Piano Studio',
+  'home.metaLink.blog': 'Leia o blog',
+  'home.metaLink.github': 'Código no GitHub',
+  'home.metaLink.discord': 'Entre na comunidade do Discord',
+  'home.metaLinks.aria': 'links do midee',
+  'home.aria': 'início do midee',
 
   // ── Top strip (primary nav) ─────────────────────────────────
   'topStrip.home': 'Início',
@@ -198,9 +198,9 @@ const ptBR: Messages = {
   'modeError.retry': 'Tentar novamente',
 
   // ── Document title ──────────────────────────────────────────
-  'doc.title.home': 'Piano Studio',
-  'doc.title.live': 'Piano Studio · ao vivo',
-  'doc.title.learn': 'Piano Studio · aprender',
+  'doc.title.home': 'midee — solte um MIDI, veja-o cantar',
+  'doc.title.live': 'midee · ao vivo',
+  'doc.title.learn': 'midee · aprender',
 
   // ── Learn hub ───────────────────────────────────────────────
   'learn.hub.recommended': 'Recomendado',
@@ -366,7 +366,7 @@ const ptBR: Messages = {
   'learn.summary.again': 'De novo',
   'learn.summary.next': 'Próximo',
 
-  'learn.soon.docTitle': 'Aprender · Piano Studio',
+  'learn.soon.docTitle': 'Aprender · midee',
   'learn.soon.badge': 'Em breve',
   'learn.soon.title.html': 'Pratique, <em>gamificado</em>.',
   'learn.soon.body': 'Sequências, níveis e um piano roll que sabe quando você está chutando.',
@@ -412,8 +412,8 @@ const ptBR: Messages = {
 
   // ── Toasts / confirmations ─────────────────────────────────
   'toast.export.ready': '{filename} pronto',
-  'toast.session.saved': 'piano-session.mid · {seconds}s',
-  'toast.loop.saved': 'piano-loop.mid',
+  'toast.session.saved': 'midee-session.mid · {seconds}s',
+  'toast.loop.saved': 'midee-loop.mid',
   'toast.recording.empty': 'Nada gravado — toque algumas notas com o Gravar ativo.',
 
   'onboarding.localeDetected': 'Mostrando em {language} · troque em Aparência',
