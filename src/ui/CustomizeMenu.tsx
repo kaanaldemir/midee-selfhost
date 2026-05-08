@@ -20,11 +20,17 @@ import { isNarrowViewport } from './utils'
 
 const KEY_BINDING_ROWS: ReadonlyArray<{
   id: BindingRow
-  labelKey: 'customize.keyboard.lower' | 'customize.keyboard.upper'
+  labelKey:
+    | 'customize.keyboard.lower'
+    | 'customize.keyboard.middle'
+    | 'customize.keyboard.upper'
+    | 'customize.keyboard.numbers'
   indices: readonly number[]
 }> = [
-  { id: 'lower', labelKey: 'customize.keyboard.lower', indices: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16] },
+  { id: 'upper', labelKey: 'customize.keyboard.numbers', indices: [1, 3, 6, 8, 10, 13, 15] },
   { id: 'upper', labelKey: 'customize.keyboard.upper', indices: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16] },
+  { id: 'lower', labelKey: 'customize.keyboard.middle', indices: [1, 3, 6, 8, 10, 13, 15] },
+  { id: 'lower', labelKey: 'customize.keyboard.lower', indices: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16] },
 ]
 const DEFAULT_KEYBOARD_BINDINGS = getDefaultComputerKeyboardBindings()
 
@@ -230,7 +236,12 @@ function MenuView(props: MenuProps) {
               <div class="customize-keybind-row-head">
                 <span class="customize-keybind-row-label">{t(rowInfo.labelKey)}</span>
               </div>
-              <div class="customize-keybind-grid">
+              <div
+                class="customize-keybind-grid"
+                style={{
+                  'grid-template-columns': `repeat(${rowInfo.indices.length}, minmax(0, 1fr))`,
+                }}
+              >
                 <For each={rowInfo.indices}>
                   {(bindingIndex) => {
                     const fallback = DEFAULT_KEYBOARD_BINDINGS[rowInfo.id][bindingIndex]
