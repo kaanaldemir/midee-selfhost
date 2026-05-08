@@ -1,6 +1,7 @@
 import type { Application } from 'pixi.js'
-import { Container, Graphics, RenderTexture, Sprite, Texture, TilingSprite } from 'pixi.js'
+import { Container, Graphics, RenderTexture, Sprite, Text, Texture, TilingSprite } from 'pixi.js'
 import { isBlackKey, MIDI_MAX, MIDI_MIN } from '../core/midi/types'
+import type { ComputerKeyboardPitchLabel } from '../midi/ComputerKeyboardInput'
 import type { Theme } from './theme'
 import type { Viewport } from './viewport'
 
@@ -79,6 +80,7 @@ export class KeyboardRenderer {
   // z-stack and avoids masks.
   private whitePracticeHintLayer: Graphics
   private blackPracticeHintLayer: Graphics
+  private labelLayer: Container
   private practiceSignature = ''
   private practicePulsePhase = 0
   private practiceTickerHandler: ((ticker: import('pixi.js').Ticker) => void) | null = null
@@ -91,6 +93,7 @@ export class KeyboardRenderer {
   // sustained chords and idle frames).
   private lastSignature = ''
   private activeLayerDirty = true
+  private keyLabels: readonly ComputerKeyboardPitchLabel[] = []
   // Signature of the last baked-texture inputs (size + key positions + theme
   // colors). Used to short-circuit build() when nothing that affects the
   // baked RenderTextures has actually changed — skips a texture destroy/
@@ -112,6 +115,8 @@ export class KeyboardRenderer {
     this.whitePracticeHintLayer.label = 'keyboard-practice-hint-white'
     this.blackPracticeHintLayer = new Graphics()
     this.blackPracticeHintLayer.label = 'keyboard-practice-hint-black'
+    this.labelLayer = new Container()
+    this.labelLayer.label = 'keyboard-labels'
     // Order matters: white hints/active must sit above the white sprite but
     // below the black sprite. Black hints/active sit above the black sprite.
     // Sprites are inserted by build() at the correct indices.
@@ -119,6 +124,7 @@ export class KeyboardRenderer {
     this.container.addChild(this.whiteActiveLayer)
     this.container.addChild(this.blackPracticeHintLayer)
     this.container.addChild(this.blackActiveLayer)
+    this.container.addChild(this.labelLayer)
   }
 
   // Build or rebuild the static keyboard textures.
@@ -289,9 +295,19 @@ export class KeyboardRenderer {
     this.whiteActiveLayer.y = yOffset
     this.blackPracticeHintLayer.y = yOffset
     this.blackActiveLayer.y = yOffset
+    this.drawKeyLabels(positions, yOffset, keyboardHeight)
     // Force a redraw of the hint layer on the next setPracticeHints call —
     // the geometry depends on the freshly-built viewport.
     this.practiceSignature = ''
+  }
+
+  setKeyLabels(labels: readonly ComputerKeyboardPitchLabel[], viewport: Viewport): void {
+    this.keyLabels = labels
+    this.drawKeyLabels(
+      viewport.getAllKeyPositions(),
+      viewport.rollHeight,
+      viewport.config.keyboardHeight,
+    )
   }
 
   // Called every frame — draws only the keys that are currently pressed, each
@@ -347,6 +363,109 @@ export class KeyboardRenderer {
     // Practice hint colours follow the active theme accent.
     this.practiceTheme = theme
     this.practiceSignature = ''
+    this.drawKeyLabels(
+      this.lastPositions,
+      this.whiteSprite?.y ?? 0,
+      this.whiteSprite?.height ?? 0,
+    )
+  }
+
+  private drawKeyLabels(
+    positions: ReadonlyMap<number, { x: number; width: number }> | null,
+    yOffset: number,
+    keyboardHeight: number,
+  ): void {
+    for (const child of this.labelLayer.removeChildren()) child.destroy()
+    this.labelLayer.y = yOffset
+    if (!positions || keyboardHeight <= 0 || this.keyLabels.length === 0) return
+
+    for (const label of this.keyLabels) {
+      const pos = positions.get(label.pitch)
+      if (!pos) continue
+      const black = isBlackKey(label.pitch)
+      const keyHeight = black ? keyboardHeight * 0.62 : keyboardHeight - 4
+      const keyY = black ? 0 : 2
+      const keyX = black ? pos.x : pos.x + 1
+      const keyW = black ? pos.width : pos.width - 2
+      const lower = label.lower.join(' / ')
+      const upper = label.upper.join(' / ')
+      const rows = [label.note, '•', lower, upper]
+      const longest = rows.reduce((max, row) => Math.max(max, row.length), 1)
+      const fontSize = Math.min(
+        black ? 8 : 10,
+        keyW / Math.max(1.4, longest * 0.58),
+        keyHeight / 6.2,
+      )
+
+      if (fontSize < 5.5 || keyW < 7) continue
+
+      const fill = black ? 0xf8f8ff : 0x141420
+      const dotFill = this.theme.trackColors[0] ?? this.theme.nowLine
+      const alpha = black ? 0.9 : 0.72
+      const rowYs = black
+        ? [0.18, 0.34, 0.55, 0.76]
+        : [0.22, 0.36, 0.58, 0.78]
+
+      this.addKeyLabelText(
+        label.note,
+        keyX + keyW / 2,
+        keyY + keyHeight * rowYs[0]!,
+        fontSize,
+        fill,
+        alpha,
+      )
+      this.addKeyLabelText(
+        '•',
+        keyX + keyW / 2,
+        keyY + keyHeight * rowYs[1]!,
+        fontSize * 0.9,
+        dotFill,
+        0.85,
+      )
+      if (lower)
+        this.addKeyLabelText(
+          lower,
+          keyX + keyW / 2,
+          keyY + keyHeight * rowYs[2]!,
+          fontSize,
+          fill,
+          alpha,
+        )
+      if (upper)
+        this.addKeyLabelText(
+          upper,
+          keyX + keyW / 2,
+          keyY + keyHeight * rowYs[3]!,
+          fontSize,
+          fill,
+          alpha,
+        )
+    }
+  }
+
+  private addKeyLabelText(
+    text: string,
+    x: number,
+    y: number,
+    fontSize: number,
+    fill: number,
+    alpha: number,
+  ): void {
+    const t = new Text({
+      text,
+      style: {
+        fontFamily: 'Inter, Arial, sans-serif',
+        fontSize,
+        fontWeight: '700',
+        fill,
+        align: 'center',
+      },
+    })
+    t.anchor.set(0.5)
+    t.x = x
+    t.y = y
+    t.alpha = alpha
+    this.labelLayer.addChild(t)
   }
 
   // Public hook for the parent renderer to swap in the current practice-mode

@@ -20,7 +20,10 @@ import { ENABLE_LEARN_MODE } from './env'
 import type { VideoExporter } from './export/VideoExporter'
 import { setLocale, t } from './i18n'
 import { CaptureFanout } from './midi/CaptureFanout'
-import { ComputerKeyboardInput } from './midi/ComputerKeyboardInput'
+import {
+  ComputerKeyboardInput,
+  getComputerKeyboardPitchLabels,
+} from './midi/ComputerKeyboardInput'
 import { LiveLooper, type LiveLooperState } from './midi/LiveLooper'
 import { LiveNoteStore } from './midi/LiveNoteStore'
 import type { CapturedEvent } from './midi/MidiEncoding'
@@ -558,13 +561,19 @@ export class App {
           this.performanceBus.routePedalUp('keyboard')
         }
       }),
-      this.keyboardInput.octave.subscribe((o) => this.controls.updateOctave(o)),
+      this.keyboardInput.octave.subscribe((o) => {
+        this.controls.updateOctave(o)
+        this.renderer.setKeyboardLabels(getComputerKeyboardPitchLabels(o))
+      }),
       this.inputBus.noteOn.subscribe((evt) => {
         if (evt) this.handleLiveNoteOn(evt)
       }),
       this.inputBus.noteOff.subscribe((evt) => {
         if (evt) this.handleLiveNoteOff(evt)
       }),
+    )
+    this.renderer.setKeyboardLabels(
+      getComputerKeyboardPitchLabels(this.keyboardInput.octave.value),
     )
 
     // Mouse/touch on the on-screen keyboard — down to press, move to slide

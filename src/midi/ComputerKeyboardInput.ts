@@ -1,4 +1,5 @@
 import type { MasterClock } from '../core/clock/MasterClock'
+import { pitchToNoteName } from '../core/midi/types'
 import { createEventSignal } from '../store/eventSignal'
 import type { MidiNoteEvent } from './MidiInputManager'
 
@@ -43,6 +44,77 @@ const NOTE_MAP: Record<string, number> = {
   KeyO: 26,
   Digit0: 27,
   KeyP: 28,
+}
+
+type BindingRow = 'lower' | 'upper'
+
+const KEY_DISPLAY: Record<string, { label: string; row: BindingRow }> = {
+  KeyZ: { label: 'Z', row: 'lower' },
+  KeyS: { label: 'S', row: 'lower' },
+  KeyX: { label: 'X', row: 'lower' },
+  KeyD: { label: 'D', row: 'lower' },
+  KeyC: { label: 'C', row: 'lower' },
+  KeyV: { label: 'V', row: 'lower' },
+  KeyG: { label: 'G', row: 'lower' },
+  KeyB: { label: 'B', row: 'lower' },
+  KeyH: { label: 'H', row: 'lower' },
+  KeyN: { label: 'N', row: 'lower' },
+  KeyJ: { label: 'J', row: 'lower' },
+  KeyM: { label: 'M', row: 'lower' },
+  Comma: { label: 'Ö', row: 'lower' },
+  KeyL: { label: 'L', row: 'lower' },
+  Period: { label: 'Ç', row: 'lower' },
+  Semicolon: { label: 'Ş', row: 'lower' },
+  Slash: { label: '.', row: 'lower' },
+  KeyQ: { label: 'Q', row: 'upper' },
+  Digit2: { label: '2', row: 'upper' },
+  KeyW: { label: 'W', row: 'upper' },
+  Digit3: { label: '3', row: 'upper' },
+  KeyE: { label: 'E', row: 'upper' },
+  KeyR: { label: 'R', row: 'upper' },
+  Digit5: { label: '5', row: 'upper' },
+  KeyT: { label: 'T', row: 'upper' },
+  Digit6: { label: '6', row: 'upper' },
+  KeyY: { label: 'Y', row: 'upper' },
+  Digit7: { label: '7', row: 'upper' },
+  KeyU: { label: 'U', row: 'upper' },
+  KeyI: { label: 'I', row: 'upper' },
+  Digit9: { label: '9', row: 'upper' },
+  KeyO: { label: 'O', row: 'upper' },
+  Digit0: { label: '0', row: 'upper' },
+  KeyP: { label: 'P', row: 'upper' },
+}
+
+export interface ComputerKeyboardPitchLabel {
+  pitch: number
+  note: string
+  lower: readonly string[]
+  upper: readonly string[]
+}
+
+export function getComputerKeyboardPitchLabels(octave: number): ComputerKeyboardPitchLabel[] {
+  const byPitch = new Map<number, { lower: string[]; upper: string[] }>()
+  for (const [code, offset] of Object.entries(NOTE_MAP)) {
+    const display = KEY_DISPLAY[code]
+    if (!display) continue
+    const pitch = 12 * (octave + 1) + offset
+    if (pitch < 21 || pitch > 108) continue
+    let row = byPitch.get(pitch)
+    if (!row) {
+      row = { lower: [], upper: [] }
+      byPitch.set(pitch, row)
+    }
+    row[display.row].push(display.label)
+  }
+
+  return Array.from(byPitch.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([pitch, row]) => ({
+      pitch,
+      note: pitchToNoteName(pitch),
+      lower: row.lower,
+      upper: row.upper,
+    }))
 }
 
 const DEFAULT_VELOCITY = 0.75

@@ -1,6 +1,7 @@
 import { Application, Graphics, type Ticker } from 'pixi.js'
 import type { MasterClock } from '../core/clock/MasterClock'
 import type { MidiFile } from '../core/midi/types'
+import type { ComputerKeyboardPitchLabel } from '../midi/ComputerKeyboardInput'
 import type { LiveNoteStore } from '../midi/LiveNoteStore'
 import { BeatGrid } from './BeatGrid'
 import { KeyboardRenderer } from './KeyboardRenderer'
@@ -313,6 +314,11 @@ export class PianoRollRenderer {
 
   get currentKeyboardHeight(): number {
     return this.keyboardHeight
+  }
+
+  setKeyboardLabels(labels: readonly ComputerKeyboardPitchLabel[]): void {
+    this.keyboardRenderer.setKeyLabels(labels, this.viewport)
+    this.renderStaticFrame(0)
   }
 
   setParticleStyle(style: import('./ParticleSystem').ParticleStyle): void {
