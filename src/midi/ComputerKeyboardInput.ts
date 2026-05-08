@@ -305,12 +305,13 @@ function normalizeBindingRow(raw: unknown, fallback: ComputerKeyboardBinding[]):
     ) {
       return { ...defaultBinding }
     }
-    return {
+    const normalized: ComputerKeyboardBinding = {
       code: candidate.code,
       label: candidate.label.slice(0, 8),
       offset: defaultBinding.offset,
-      shift: defaultBinding.shift,
     }
+    if (defaultBinding.shift !== undefined) normalized.shift = defaultBinding.shift
+    return normalized
   })
 }
 
