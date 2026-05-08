@@ -383,50 +383,53 @@ export class KeyboardRenderer {
       const pos = positions.get(label.pitch)
       if (!pos) continue
       const black = isBlackKey(label.pitch)
-      const keyHeight = black ? keyboardHeight * 0.62 : keyboardHeight - 4
+      const blackHeight = keyboardHeight * 0.62
+      const keyHeight = black ? blackHeight : keyboardHeight - 4
       const keyY = black ? 0 : 2
       const keyX = black ? pos.x : pos.x + 1
       const keyW = black ? pos.width : pos.width - 2
+      const labelTop = black ? keyY : blackHeight + (keyboardHeight - blackHeight) * 0.07
+      const labelHeight = black ? keyHeight : keyboardHeight - labelTop - 5
       const lower = label.lower.join(' / ')
       const upper = label.upper.join(' / ')
       const rows = [label.note, '•', lower, upper]
       const longest = rows.reduce((max, row) => Math.max(max, row.length), 1)
       const fontSize = Math.min(
-        black ? 8 : 10,
+        black ? 8 : 9.5,
         keyW / Math.max(1.4, longest * 0.58),
-        keyHeight / 6.2,
+        labelHeight / 4.6,
       )
 
       if (fontSize < 5.5 || keyW < 7) continue
 
       const fill = black ? 0xf8f8ff : 0x141420
       const dotFill = this.theme.trackColors[0] ?? this.theme.nowLine
-      const alpha = black ? 0.9 : 0.72
+      const alpha = black ? 0.86 : 0.68
       const rowYs = black
         ? [0.18, 0.34, 0.55, 0.76]
-        : [0.22, 0.36, 0.58, 0.78]
+        : [0.08, 0.26, 0.58, 0.9]
 
       this.addKeyLabelText(
         label.note,
         keyX + keyW / 2,
-        keyY + keyHeight * rowYs[0]!,
-        fontSize,
+        labelTop + labelHeight * rowYs[0]!,
+        fontSize * (black ? 0.92 : 1.05),
         fill,
-        alpha,
+        alpha + 0.08,
       )
       this.addKeyLabelText(
         '•',
         keyX + keyW / 2,
-        keyY + keyHeight * rowYs[1]!,
-        fontSize * 0.9,
+        labelTop + labelHeight * rowYs[1]!,
+        fontSize * 0.72,
         dotFill,
-        0.85,
+        0.5,
       )
       if (lower)
         this.addKeyLabelText(
           lower,
           keyX + keyW / 2,
-          keyY + keyHeight * rowYs[2]!,
+          labelTop + labelHeight * rowYs[2]!,
           fontSize,
           fill,
           alpha,
@@ -435,7 +438,7 @@ export class KeyboardRenderer {
         this.addKeyLabelText(
           upper,
           keyX + keyW / 2,
-          keyY + keyHeight * rowYs[3]!,
+          labelTop + labelHeight * rowYs[3]!,
           fontSize,
           fill,
           alpha,
