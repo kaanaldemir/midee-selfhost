@@ -224,8 +224,8 @@ export const en = {
 
   // ── Document title (browser tab) ───────────────────────────
   'doc.title.home': 'Piano Studio',
-  'doc.title.live': 'midee · live',
-  'doc.title.learn': 'midee · learn',
+  'doc.title.live': 'Piano Studio',
+  'doc.title.learn': 'Piano Studio',
 
   // ── Learn hub ───────────────────────────────────────────────
   'learn.hub.recommended': 'Recommended',
@@ -399,7 +399,7 @@ export const en = {
   'learn.summary.next': 'Next',
 
   // Coming-soon surface (Learn mode disabled via feature flag).
-  'learn.soon.docTitle': 'Learn · midee',
+  'learn.soon.docTitle': 'Piano Studio',
   'learn.soon.badge': 'Coming soon',
   'learn.soon.title.html': 'Practice, <em>gamified</em>.',
   'learn.soon.body': "Streaks, levels, and a piano roll that knows when you're guessing.",

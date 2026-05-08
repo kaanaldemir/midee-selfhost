@@ -1264,7 +1264,7 @@ export class App {
     this.renderer.loadMidi(midi)
     this.trackPanel.render(midi)
     this.dropzone.hide()
-    document.title = `${midi.name} · midee`
+    document.title = `${midi.name} · Piano Studio`
   }
 
   private async saveLoopAsMidi(): Promise<void> {
