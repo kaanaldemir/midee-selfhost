@@ -97,6 +97,8 @@ export const en = {
   'customize.keyboard.numbers': 'Upper octave black keys',
   'customize.keyboard.extended': 'Extended keybinds',
   'customize.keyboard.extended.sub': '61 keys · hold Shift for black keys',
+  'customize.keyboard.extended.white': 'Extended white keys',
+  'customize.keyboard.extended.black': 'Extended black keys',
   'customize.keyboard.restore': 'Restore defaults',
   'customize.keyboard.capture': 'Press key',
   'customize.language': 'Language',

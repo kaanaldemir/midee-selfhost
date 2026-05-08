@@ -76,6 +76,8 @@ const es: Messages = {
   'customize.keyboard.numbers': 'Teclas negras de octava alta',
   'customize.keyboard.extended': 'Atajos extendidos',
   'customize.keyboard.extended.sub': '61 teclas · mantén Shift para negras',
+  'customize.keyboard.extended.white': 'Teclas blancas extendidas',
+  'customize.keyboard.extended.black': 'Teclas negras extendidas',
   'customize.keyboard.restore': 'Restaurar todo',
   'customize.keyboard.capture': 'Pulsa tecla',
   'customize.language': 'Idioma',

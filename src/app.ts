@@ -32,6 +32,7 @@ import {
   getLayoutAwareComputerKeyboardBindings,
   keyEventToComputerKeyboardBinding,
   normalizeComputerKeyboardBindings,
+  normalizeExtendedComputerKeyboardBindings,
   setComputerKeyboardBinding,
 } from './midi/ComputerKeyboardInput'
 import { LiveLooper, type LiveLooperState } from './midi/LiveLooper'
@@ -155,6 +156,7 @@ export class App {
   private particleIndex = particleIndexStore.load()
   private keyRangeCount = keyRangeStore.load()
   private keyboardDefaultBindings = getDefaultComputerKeyboardBindings()
+  private extendedKeyboardDefaultBindings = getDefaultExtendedComputerKeyboardBindings()
   private extendedKeyboardBindings = getDefaultExtendedComputerKeyboardBindings()
   private keyboardBindings = keyboardBindingStore.load()
   private extendedKeyboardOn = extendedKeyboardStore.load()
@@ -465,6 +467,8 @@ export class App {
         onToggleExtendedKeyboard: () => this.toggleExtendedKeyboard(),
         onSetKeyboardBinding: (row, index, event) =>
           this.setKeyboardBindingFromEvent(row, index, event),
+        onSetExtendedKeyboardBinding: (row, index, event) =>
+          this.setExtendedKeyboardBindingFromEvent(row, index, event),
         onResetKeyboardBindings: () => this.resetKeyboardBindings(),
         // Locale change is rare, and almost every part of the UI was built
         // with the previous locale baked in via template literals. Reload
@@ -479,6 +483,7 @@ export class App {
     this.customizeMenu.setChord(this.chordOverlayOn)
     this.customizeMenu.setExtendedKeyboard(this.extendedKeyboardOn)
     this.customizeMenu.setKeyboardBindings(this.keyboardBindings)
+    this.customizeMenu.setExtendedKeyboardBindings(this.extendedKeyboardBindings)
 
     this.applyTheme(THEMES[this.themeIndex]!)
     this.applyInstrument()
@@ -605,7 +610,9 @@ export class App {
       }),
       this.keyboardInput.octave.subscribe((o) => {
         this.controls.updateOctave(o)
-        this.renderer.setKeyboardLabels(getComputerKeyboardPitchLabels(o, this.keyboardBindings))
+        this.renderer.setKeyboardLabels(
+          getComputerKeyboardPitchLabels(o, this.getActiveKeyboardBindings()),
+        )
         this.applyKeyboardRange()
       }),
       this.inputBus.noteOn.subscribe((evt) => {
@@ -616,7 +623,10 @@ export class App {
       }),
     )
     this.renderer.setKeyboardLabels(
-      getComputerKeyboardPitchLabels(this.keyboardInput.octave.value, this.keyboardBindings),
+      getComputerKeyboardPitchLabels(
+        this.keyboardInput.octave.value,
+        this.getActiveKeyboardBindings(),
+      ),
     )
     this.applyKeyboardRange()
 
@@ -986,7 +996,33 @@ export class App {
     return true
   }
 
+  private setExtendedKeyboardBindingFromEvent(
+    row: BindingRow,
+    index: number,
+    event: KeyboardEvent,
+  ): boolean {
+    const target = this.extendedKeyboardBindings[row][index]
+    const binding = keyEventToComputerKeyboardBinding(event, target?.shift === true)
+    if (!binding) return false
+    this.extendedKeyboardBindings = setComputerKeyboardBinding(
+      this.extendedKeyboardBindings,
+      row,
+      index,
+      binding.code,
+      binding.label,
+    )
+    this.applyExtendedKeyboardBindings()
+    return true
+  }
+
   private resetKeyboardBindings(): void {
+    if (this.extendedKeyboardOn) {
+      this.extendedKeyboardBindings = cloneComputerKeyboardBindings(
+        this.extendedKeyboardDefaultBindings,
+      )
+      this.applyExtendedKeyboardBindings()
+      return
+    }
     this.keyboardBindings = cloneComputerKeyboardBindings(this.keyboardDefaultBindings)
     this.applyKeyboardBindings()
   }
@@ -997,9 +1033,17 @@ export class App {
       getLayoutAwareExtendedComputerKeyboardBindings(),
     ])
     this.keyboardDefaultBindings = standardBindings
+    this.extendedKeyboardDefaultBindings = extendedBindings
     this.extendedKeyboardBindings = extendedBindings
     if (!hasSavedKeyboardBindings()) {
       this.keyboardBindings = cloneComputerKeyboardBindings(this.keyboardDefaultBindings)
+    }
+    if (hasSavedExtendedKeyboardBindings()) {
+      this.extendedKeyboardBindings = extendedKeyboardBindingStore.load()
+    } else {
+      this.extendedKeyboardBindings = cloneComputerKeyboardBindings(
+        this.extendedKeyboardDefaultBindings,
+      )
     }
     if (this.extendedKeyboardOn && this.keyRangeCount < 61) this.extendedKeyboardOn = false
   }
@@ -1021,10 +1065,16 @@ export class App {
     this.applyKeyboardInputBindings()
   }
 
+  private applyExtendedKeyboardBindings(): void {
+    extendedKeyboardBindingStore.save(this.extendedKeyboardBindings)
+    this.applyKeyboardInputBindings()
+  }
+
   private applyKeyboardInputBindings(): void {
     this.keyboardInput.setBindings(this.getActiveKeyboardBindings())
     this.customizeMenu?.setExtendedKeyboard(this.extendedKeyboardOn)
     this.customizeMenu?.setKeyboardBindings(this.keyboardBindings)
+    this.customizeMenu?.setExtendedKeyboardBindings(this.extendedKeyboardBindings)
     this.applyKeyboardRange()
   }
 
@@ -1677,10 +1727,16 @@ const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
 ]
 const keyRangeStore = numberPersisted('midee.keyboardRange', 29, 25, 88)
 const KEYBOARD_BINDINGS_STORAGE_KEY = 'midee.keyboardBindings'
+const EXTENDED_KEYBOARD_BINDINGS_STORAGE_KEY = 'midee.extendedKeyboardBindings.map'
 const keyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
   KEYBOARD_BINDINGS_STORAGE_KEY,
   getDefaultComputerKeyboardBindings(),
   normalizeComputerKeyboardBindings,
+)
+const extendedKeyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
+  EXTENDED_KEYBOARD_BINDINGS_STORAGE_KEY,
+  getDefaultExtendedComputerKeyboardBindings(),
+  normalizeExtendedComputerKeyboardBindings,
 )
 const extendedKeyboardStore = booleanPersisted('midee.extendedKeyboardBindings', false)
 const extendedKeyboardPreferredStore = booleanPersisted(
@@ -1716,10 +1772,24 @@ function fitPitchRange(midi: import('./core/midi/types').MidiFile): { min: numbe
 }
 
 function hasSavedKeyboardBindings(): boolean {
+  return hasSavedKeyboardBindingValue(KEYBOARD_BINDINGS_STORAGE_KEY, normalizeComputerKeyboardBindings)
+}
+
+function hasSavedExtendedKeyboardBindings(): boolean {
+  return hasSavedKeyboardBindingValue(
+    EXTENDED_KEYBOARD_BINDINGS_STORAGE_KEY,
+    normalizeExtendedComputerKeyboardBindings,
+  )
+}
+
+function hasSavedKeyboardBindingValue(
+  key: string,
+  normalize: (raw: unknown) => ComputerKeyboardBindingRows,
+): boolean {
   try {
-    const raw = localStorage.getItem(KEYBOARD_BINDINGS_STORAGE_KEY)
+    const raw = localStorage.getItem(key)
     if (raw === null) return false
-    normalizeComputerKeyboardBindings(JSON.parse(raw))
+    normalize(JSON.parse(raw))
     return true
   } catch {
     return false

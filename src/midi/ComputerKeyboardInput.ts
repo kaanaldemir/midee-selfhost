@@ -69,26 +69,16 @@ const EXTENDED_MAX_PITCH = 96
 const DEFAULT_BASE_PITCH = 12 * (DEFAULT_OCTAVE + 1)
 const BLACK_PITCH_CLASSES = new Set([1, 3, 6, 8, 10])
 const EXTENDED_WHITE_KEY_CODES = [
-  'KeyZ',
-  'KeyX',
-  'KeyC',
-  'KeyV',
-  'KeyB',
-  'KeyN',
-  'KeyM',
-  'Comma',
-  'Period',
-  'Slash',
-  'KeyA',
-  'KeyS',
-  'KeyD',
-  'KeyF',
-  'KeyG',
-  'KeyH',
-  'KeyJ',
-  'KeyK',
-  'KeyL',
-  'Semicolon',
+  'Digit1',
+  'Digit2',
+  'Digit3',
+  'Digit4',
+  'Digit5',
+  'Digit6',
+  'Digit7',
+  'Digit8',
+  'Digit9',
+  'Digit0',
   'KeyQ',
   'KeyW',
   'KeyE',
@@ -99,12 +89,22 @@ const EXTENDED_WHITE_KEY_CODES = [
   'KeyI',
   'KeyO',
   'KeyP',
-  'BracketLeft',
-  'BracketRight',
-  'Digit1',
-  'Digit2',
-  'Digit3',
-  'Digit4',
+  'KeyA',
+  'KeyS',
+  'KeyD',
+  'KeyF',
+  'KeyG',
+  'KeyH',
+  'KeyJ',
+  'KeyK',
+  'KeyL',
+  'KeyZ',
+  'KeyX',
+  'KeyC',
+  'KeyV',
+  'KeyB',
+  'KeyN',
+  'KeyM',
 ] as const
 
 const DEFAULT_SHIFT_LABELS: Record<string, string> = {
@@ -218,13 +218,26 @@ export function cloneComputerKeyboardBindings(
 }
 
 export function normalizeComputerKeyboardBindings(raw: unknown): ComputerKeyboardBindingRows {
-  if (!raw || typeof raw !== 'object') return getDefaultComputerKeyboardBindings()
+  return normalizeComputerKeyboardBindingsWithFallback(raw, DEFAULT_BINDINGS)
+}
+
+export function normalizeExtendedComputerKeyboardBindings(
+  raw: unknown,
+): ComputerKeyboardBindingRows {
+  return normalizeComputerKeyboardBindingsWithFallback(raw, getDefaultExtendedComputerKeyboardBindings())
+}
+
+function normalizeComputerKeyboardBindingsWithFallback(
+  raw: unknown,
+  fallback: ComputerKeyboardBindingRows,
+): ComputerKeyboardBindingRows {
+  if (!raw || typeof raw !== 'object') return cloneBindings(fallback)
   const rows = raw as Partial<Record<BindingRow, unknown>>
   const normalized = {
-    lower: normalizeBindingRow(rows.lower, DEFAULT_BINDINGS.lower),
-    upper: normalizeBindingRow(rows.upper, DEFAULT_BINDINGS.upper),
+    lower: normalizeBindingRow(rows.lower, fallback.lower),
+    upper: normalizeBindingRow(rows.upper, fallback.upper),
   }
-  return dedupeBindings(normalized)
+  return dedupeBindings(normalized, fallback)
 }
 
 export function setComputerKeyboardBinding(
@@ -239,8 +252,11 @@ export function setComputerKeyboardBinding(
   if (!target || RESERVED_BINDING_CODES.has(code)) return next
   const oldCode = target.code
   const oldLabel = target.label
+  const targetShift = target.shift === true
   for (const rowId of ['lower', 'upper'] as const) {
-    const duplicateIndex = next[rowId].findIndex((binding) => binding.code === code)
+    const duplicateIndex = next[rowId].findIndex(
+      (binding) => binding.code === code && (binding.shift === true) === targetShift,
+    )
     if (duplicateIndex < 0 || (rowId === row && duplicateIndex === index)) continue
     next[rowId][duplicateIndex] = {
       ...next[rowId][duplicateIndex]!,
@@ -254,8 +270,9 @@ export function setComputerKeyboardBinding(
 
 export function keyEventToComputerKeyboardBinding(
   e: KeyboardEvent,
+  allowShift = false,
 ): { code: string; label: string } | null {
-  if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return null
+  if (e.ctrlKey || e.metaKey || e.altKey || (!allowShift && e.shiftKey)) return null
   if (!e.code || RESERVED_BINDING_CODES.has(e.code)) return null
   const label = formatKeyLabel(e)
   return label ? { code: e.code, label } : null
@@ -315,21 +332,25 @@ function normalizeBindingRow(raw: unknown, fallback: ComputerKeyboardBinding[]):
   })
 }
 
-function dedupeBindings(rows: ComputerKeyboardBindingRows): ComputerKeyboardBindingRows {
+function dedupeBindings(
+  rows: ComputerKeyboardBindingRows,
+  fallback: ComputerKeyboardBindingRows,
+): ComputerKeyboardBindingRows {
   const next = cloneBindings(rows)
   const seen = new Set<string>()
   for (const rowId of ['lower', 'upper'] as const) {
     for (let i = 0; i < next[rowId].length; i++) {
       const binding = next[rowId][i]!
-      if (!seen.has(binding.code)) {
-        seen.add(binding.code)
+      const key = noteMapKey(binding.code, binding.shift === true)
+      if (!seen.has(key)) {
+        seen.add(key)
         continue
       }
       const replacement =
-        DEFAULT_BINDINGS[rowId].find((candidate) => !seen.has(candidate.code)) ??
-        DEFAULT_BINDINGS[rowId][i]!
+        fallback[rowId].find((candidate) => !seen.has(noteMapKey(candidate.code, candidate.shift === true))) ??
+        fallback[rowId][i]!
       next[rowId][i] = { ...replacement }
-      seen.add(next[rowId][i]!.code)
+      seen.add(noteMapKey(next[rowId][i]!.code, next[rowId][i]!.shift === true))
     }
   }
   return next
@@ -444,6 +465,7 @@ function fallbackKeyLabel(code: string, shifted: boolean): string {
     Semicolon: ';',
   }
   if (named[code]) return named[code]!
+  if (code === 'KeyI' && getKeyboardLocale().toLowerCase().startsWith('tr')) return 'ı'
   if (code.startsWith('Key')) return code.slice(3).toLocaleLowerCase()
   if (code.startsWith('Digit')) return code.slice(5)
   return code
