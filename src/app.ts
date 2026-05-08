@@ -158,6 +158,8 @@ export class App {
   private extendedKeyboardBindings = getDefaultExtendedComputerKeyboardBindings()
   private keyboardBindings = keyboardBindingStore.load()
   private extendedKeyboardOn = extendedKeyboardStore.load()
+  private extendedKeyboardPreferred =
+    extendedKeyboardPreferredStore.load() || this.extendedKeyboardOn
   private audioPrimed = false
   // Analytics one-shot flags. Reset when a new file is loaded so a user
   // who opens MIDI A then MIDI B gets `first_play` events for both.
@@ -907,19 +909,28 @@ export class App {
   }
 
   private setKeyboardRangeByCount(keyCount: number): void {
-    if (this.extendedKeyboardOn && keyCount < 61) keyCount = 61
     if (!KEY_RANGE_OPTIONS.some((opt) => opt.keyCount === keyCount)) return
     if (keyCount === this.keyRangeCount) return
     this.keyRangeCount = keyCount
     keyRangeStore.save(keyCount)
+    if (keyCount < 61 && this.extendedKeyboardOn) {
+      this.extendedKeyboardOn = false
+      extendedKeyboardStore.save(false)
+      this.applyKeyboardInputBindings()
+      return
+    }
+    if (keyCount >= 61 && this.extendedKeyboardPreferred && !this.extendedKeyboardOn) {
+      this.extendedKeyboardOn = true
+      extendedKeyboardStore.save(true)
+      this.applyKeyboardInputBindings()
+      return
+    }
     this.applyKeyboardRange()
   }
 
   private applyKeyboardRange(): void {
-    const effectiveKeyRangeCount =
-      this.extendedKeyboardOn && this.keyRangeCount < 61 ? 61 : this.keyRangeCount
     const option =
-      KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === effectiveKeyRangeCount) ??
+      KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === this.keyRangeCount) ??
       KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === 29) ??
       KEY_RANGE_OPTIONS[0]!
     this.keyRangeMenu?.setCurrent(option.keyCount)
@@ -990,15 +1001,14 @@ export class App {
     if (!hasSavedKeyboardBindings()) {
       this.keyboardBindings = cloneComputerKeyboardBindings(this.keyboardDefaultBindings)
     }
-    if (this.extendedKeyboardOn && this.keyRangeCount < 61) {
-      this.keyRangeCount = 61
-      keyRangeStore.save(this.keyRangeCount)
-    }
+    if (this.extendedKeyboardOn && this.keyRangeCount < 61) this.extendedKeyboardOn = false
   }
 
   private toggleExtendedKeyboard(): void {
     this.extendedKeyboardOn = !this.extendedKeyboardOn
+    this.extendedKeyboardPreferred = this.extendedKeyboardOn
     extendedKeyboardStore.save(this.extendedKeyboardOn)
+    extendedKeyboardPreferredStore.save(this.extendedKeyboardPreferred)
     if (this.extendedKeyboardOn && this.keyRangeCount < 61) {
       this.keyRangeCount = 61
       keyRangeStore.save(this.keyRangeCount)
@@ -1673,6 +1683,10 @@ const keyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
   normalizeComputerKeyboardBindings,
 )
 const extendedKeyboardStore = booleanPersisted('midee.extendedKeyboardBindings', false)
+const extendedKeyboardPreferredStore = booleanPersisted(
+  'midee.extendedKeyboardBindingsPreferred',
+  false,
+)
 const metronomeBpmStore = numberPersisted('midee.metronomeBpm', 120, 40, 240)
 // Chord readout defaults *on*: it's the headline live-mode cue. The
 // boolean store treats "no preference" as the fallback (true), and only
