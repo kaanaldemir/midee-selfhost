@@ -904,22 +904,26 @@ export class App {
       this.renderer.setKeyboardLabels(labels)
       return
     }
-    const pitches = labels.map((label) => label.pitch)
-    if (pitches.length === 0) return
-    const assignedMin = Math.min(...pitches)
-    const assignedMax = Math.max(...pitches)
-    const assignedCount = assignedMax - assignedMin + 1
-    const count = Math.min(88, Math.max(option.keyCount, assignedCount))
-    const center = (assignedMin + assignedMax) / 2
-    let min = Math.round(center - (count - 1) / 2)
-    let max = min + count - 1
-    if (min < 21) {
-      min = 21
+    let min = option.minPitch
+    let max = option.maxPitch
+    if (min === undefined || max === undefined) {
+      const pitches = labels.map((label) => label.pitch)
+      if (pitches.length === 0) return
+      const assignedMin = Math.min(...pitches)
+      const assignedMax = Math.max(...pitches)
+      const assignedCount = assignedMax - assignedMin + 1
+      const count = Math.min(88, Math.max(option.keyCount, assignedCount))
+      const center = (assignedMin + assignedMax) / 2
+      min = Math.round(center - (count - 1) / 2)
       max = min + count - 1
-    }
-    if (max > 108) {
-      max = 108
-      min = max - count + 1
+      if (min < 21) {
+        min = 21
+        max = min + count - 1
+      }
+      if (max > 108) {
+        max = 108
+        min = max - count + 1
+      }
     }
     this.renderer.setPitchRange(min, max)
     this.renderer.setKeyboardLabels(labels)
@@ -1559,13 +1563,14 @@ const particleIndexStore = indexPersisted(
   PARTICLE_STYLES.length,
 )
 const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
-  { keyCount: 25, name: 'Mini keyboard' },
-  { keyCount: 29, name: 'Mapped keys' },
-  { keyCount: 37, name: 'Compact MIDI' },
-  { keyCount: 49, name: 'Small keyboard' },
-  { keyCount: 61, name: 'Standard keyboard' },
-  { keyCount: 76, name: 'Extended keyboard' },
-  { keyCount: 88, name: 'Full piano' },
+  { keyCount: 25, name: 'Mini MIDI', minPitch: 36, maxPitch: 60 },
+  { keyCount: 29, name: 'PC keyboard' },
+  { keyCount: 32, name: '32-key MIDI', minPitch: 41, maxPitch: 72 },
+  { keyCount: 37, name: 'Compact MIDI', minPitch: 36, maxPitch: 72 },
+  { keyCount: 49, name: 'Small MIDI', minPitch: 36, maxPitch: 84 },
+  { keyCount: 61, name: 'Standard MIDI', minPitch: 36, maxPitch: 96 },
+  { keyCount: 76, name: 'Extended MIDI', minPitch: 28, maxPitch: 103 },
+  { keyCount: 88, name: 'Full piano', minPitch: 21, maxPitch: 108 },
 ]
 const keyRangeStore = numberPersisted('midee.keyboardRange', 37, 25, 88)
 const metronomeBpmStore = numberPersisted('midee.metronomeBpm', 120, 40, 240)

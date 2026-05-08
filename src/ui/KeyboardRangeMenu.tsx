@@ -6,6 +6,8 @@ import { isNarrowViewport } from './utils'
 export interface KeyboardRangeOption {
   keyCount: number
   name: string
+  minPitch?: number
+  maxPitch?: number
 }
 
 interface TriggerProps {
