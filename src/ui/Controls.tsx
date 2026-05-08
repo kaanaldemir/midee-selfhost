@@ -25,7 +25,6 @@ import {
   ZOOM_DEFAULT,
 } from './ControlsView'
 import { DragCoachmark } from './DragCoachmark'
-import { isLearnCoachmarkSeen, LearnCoachmark } from './LearnCoachmark'
 
 const SKIP_SECONDS = 10
 
@@ -119,10 +118,6 @@ export class Controls {
     const [dimTopStrip, setDimTopStrip] = createSignal(false)
     const [hudIdle, setHudIdle] = createSignal(false)
     const [hudHasDragged, setHudHasDragged] = createSignal(loadHudHasDragged())
-    // Reactive mirror of the learn-coachmark "seen" flag so the drag
-    // coachmark's eligibility re-evaluates the moment Learn fires (the
-    // localStorage read alone is not reactive).
-    const [learnCoachmarkSeen, setLearnCoachmarkSeen] = createSignal(isLearnCoachmarkSeen())
     const [instrumentLoading, setInstrumentLoading] = createSignal(false)
     const [keyHintCollapsed, setKeyHintCollapsed] = createSignal(loadKeyHintHidden())
     const [octave, setOctave] = createSignal(4)
@@ -182,19 +177,12 @@ export class Controls {
             onTracks={() => opts.onOpenTracks?.()}
             onMidi={() => opts.onMidiConnect?.()}
             onRecord={() => opts.onRecord?.()}
-            onLearnThis={() => opts.onLearnThis?.()}
             registerEl={(el) => {
               this.topStripEl = el
             }}
             registerTracksBtn={(el) => {
               this.tracksBtn = el
             }}
-          />
-          <LearnCoachmark
-            eligible={() =>
-              mode() === 'play' && hasFile() && status() !== 'loading' && status() !== 'exporting'
-            }
-            onShow={() => setLearnCoachmarkSeen(true)}
           />
           <HudView
             mode={mode}
@@ -309,10 +297,8 @@ export class Controls {
               the coachmark's onMount looks it up. */}
           <DragCoachmark
             eligible={() =>
-              // Stagger behind the Learn coachmark so two bubbles don't fight
-              // for attention. Only show when the HUD is actually visible
-              // (drag handle lives on it) and the user hasn't already dragged.
-              learnCoachmarkSeen() &&
+              // Only show when the HUD is actually visible (drag handle lives
+              // on it) and the user hasn't already dragged it.
               !hudHasDragged() &&
               hasFile() &&
               status() !== 'loading' &&

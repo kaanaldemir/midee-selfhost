@@ -28,7 +28,6 @@ export interface TopStripProps {
   onTracks: () => void
   onMidi: () => void
   onRecord: () => void
-  onLearnThis: () => void
   registerEl: (el: HTMLElement) => void
   registerTracksBtn: (el: HTMLButtonElement) => void
 }
@@ -206,20 +205,6 @@ export function TopStripView(props: TopStripProps) {
         >
           <span innerHTML={icons.tracks()} />
           <span>{t('topStrip.tracks')}</span>
-        </button>
-        <button
-          class="ts-pill ts-pill--file"
-          classList={{
-            hidden: !(props.mode() === 'play' && props.hasFile() && !props.isLoadingFile()),
-          }}
-          id="ts-learn-this"
-          type="button"
-          aria-label={t('topStrip.learnThis.aria')}
-          data-tip={t('topStrip.learnThis.tip')}
-          onClick={() => props.onLearnThis()}
-        >
-          <span innerHTML={icons.practice()} />
-          <span>{t('topStrip.learnThis.label')}</span>
         </button>
         <span id="ts-instrument-slot" />
         <div class="ts-sep" aria-hidden="true" />

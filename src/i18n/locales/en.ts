@@ -223,7 +223,7 @@ export const en = {
   'modeError.retry': 'Try again',
 
   // ── Document title (browser tab) ───────────────────────────
-  'doc.title.home': 'midee — drop a MIDI, watch it sing',
+  'doc.title.home': 'Piano Studio',
   'doc.title.live': 'midee · live',
   'doc.title.learn': 'midee · learn',
 
