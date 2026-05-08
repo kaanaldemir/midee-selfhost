@@ -1,5 +1,6 @@
 import { createSignal, For } from 'solid-js'
 import { render } from 'solid-js/web'
+import { icons } from './icons'
 import { isNarrowViewport } from './utils'
 
 export interface KeyboardRangeOption {
@@ -26,7 +27,9 @@ function TriggerView(props: TriggerProps) {
       title="Keyboard range"
       onClick={() => props.onToggle()}
     >
+      <span class="ts-key-range-icon" innerHTML={icons.keycap(13)} />
       <span class="ts-key-range-label">{props.label()}</span>
+      <span class="ts-key-range-chevron" innerHTML={icons.chevronDown(10)} />
     </button>
   )
 }

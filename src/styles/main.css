@@ -4264,7 +4264,10 @@ body.canvas-hidden #kbd-resizer {
 }
 
 .ts-pill--key-range {
-  min-width: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 64px;
   justify-content: center;
   padding-inline: 10px;
   font-variant-numeric: tabular-nums;
@@ -4272,6 +4275,22 @@ body.canvas-hidden #kbd-resizer {
 
 #top-strip:not([data-mode="live"]) #ts-key-range {
   display: none;
+}
+
+.ts-key-range-icon,
+.ts-key-range-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.ts-key-range-icon {
+  color: var(--text-muted);
+}
+
+.ts-key-range-chevron {
+  color: var(--text-dim);
 }
 
 .ts-key-range-label {
