@@ -77,6 +77,8 @@ const fr: Messages = {
   'customize.keyboard.middle': "Touches noires de l'octave basse",
   'customize.keyboard.upper': "Touches blanches de l'octave haute",
   'customize.keyboard.numbers': "Touches noires de l'octave haute",
+  'customize.keyboard.extended': 'Raccourcis étendus',
+  'customize.keyboard.extended.sub': '61 touches · maintenez Maj pour les noires',
   'customize.keyboard.restore': 'Tout réinitialiser',
   'customize.keyboard.capture': 'Appuyez',
   'customize.language': 'Langue',

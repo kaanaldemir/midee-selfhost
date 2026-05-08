@@ -15,6 +15,7 @@ export interface ComputerKeyboardBinding {
   code: string
   label: string
   offset: number
+  shift?: boolean
 }
 
 export interface ComputerKeyboardBindingRows {
@@ -63,6 +64,96 @@ const DEFAULT_BINDINGS: ComputerKeyboardBindingRows = {
   ],
 }
 
+const EXTENDED_MIN_PITCH = 36
+const EXTENDED_MAX_PITCH = 96
+const DEFAULT_BASE_PITCH = 12 * (DEFAULT_OCTAVE + 1)
+const BLACK_PITCH_CLASSES = new Set([1, 3, 6, 8, 10])
+const EXTENDED_WHITE_KEY_CODES = [
+  'KeyZ',
+  'KeyX',
+  'KeyC',
+  'KeyV',
+  'KeyB',
+  'KeyN',
+  'KeyM',
+  'Comma',
+  'Period',
+  'Slash',
+  'KeyA',
+  'KeyS',
+  'KeyD',
+  'KeyF',
+  'KeyG',
+  'KeyH',
+  'KeyJ',
+  'KeyK',
+  'KeyL',
+  'Semicolon',
+  'KeyQ',
+  'KeyW',
+  'KeyE',
+  'KeyR',
+  'KeyT',
+  'KeyY',
+  'KeyU',
+  'KeyI',
+  'KeyO',
+  'KeyP',
+  'BracketLeft',
+  'BracketRight',
+  'Digit1',
+  'Digit2',
+  'Digit3',
+  'Digit4',
+] as const
+
+const DEFAULT_SHIFT_LABELS: Record<string, string> = {
+  Backquote: '~',
+  Digit1: '!',
+  Digit2: '@',
+  Digit3: '#',
+  Digit4: '$',
+  Digit5: '%',
+  Digit6: '^',
+  Digit7: '&',
+  Digit8: '*',
+  Digit9: '(',
+  Digit0: ')',
+  Minus: '_',
+  Equal: '+',
+  BracketLeft: '{',
+  BracketRight: '}',
+  Backslash: '|',
+  Semicolon: ':',
+  Quote: '"',
+  Comma: '<',
+  Period: '>',
+  Slash: '?',
+}
+
+const TURKISH_SHIFT_LABELS: Record<string, string> = {
+  Digit1: '!',
+  Digit2: "'",
+  Digit3: '^',
+  Digit4: '+',
+  Digit5: '%',
+  Digit6: '&',
+  Digit7: '/',
+  Digit8: '(',
+  Digit9: ')',
+  Digit0: '=',
+}
+
+const KOREAN_SHIFT_LABELS: Record<string, string> = {
+  'ㅂ': 'ㅃ',
+  'ㅈ': 'ㅉ',
+  'ㄷ': 'ㄸ',
+  'ㄱ': 'ㄲ',
+  'ㅅ': 'ㅆ',
+  'ㅐ': 'ㅒ',
+  'ㅔ': 'ㅖ',
+}
+
 const RESERVED_BINDING_CODES = new Set([
   'AltLeft',
   'AltRight',
@@ -99,6 +190,20 @@ export async function getLayoutAwareComputerKeyboardBindings(): Promise<Computer
     return applyLayoutLabels(DEFAULT_BINDINGS, layoutMap)
   } catch {
     return getDefaultComputerKeyboardBindings()
+  }
+}
+
+export function getDefaultExtendedComputerKeyboardBindings(): ComputerKeyboardBindingRows {
+  return buildExtendedBindings()
+}
+
+export async function getLayoutAwareExtendedComputerKeyboardBindings(): Promise<ComputerKeyboardBindingRows> {
+  const keyboard = getNavigatorKeyboard()
+  if (!keyboard?.getLayoutMap) return getDefaultExtendedComputerKeyboardBindings()
+  try {
+    return buildExtendedBindings(await keyboard.getLayoutMap())
+  } catch {
+    return getDefaultExtendedComputerKeyboardBindings()
   }
 }
 
@@ -204,6 +309,7 @@ function normalizeBindingRow(raw: unknown, fallback: ComputerKeyboardBinding[]):
       code: candidate.code,
       label: candidate.label.slice(0, 8),
       offset: defaultBinding.offset,
+      shift: defaultBinding.shift,
     }
   })
 }
@@ -255,28 +361,109 @@ function applyLayoutLabels(
   const next = cloneBindings(rows)
   for (const rowId of ['lower', 'upper'] as const) {
     for (const binding of next[rowId]) {
-      const label = formatLayoutLabel(layoutMap.get(binding.code))
+      const label = formatLayoutLabel(layoutMap.get(binding.code), true)
       if (label) binding.label = label
     }
   }
   return next
 }
 
-function formatLayoutLabel(raw: string | undefined): string | null {
+function buildExtendedBindings(layoutMap?: KeyboardLayoutMapLike): ComputerKeyboardBindingRows {
+  const lower: ComputerKeyboardBinding[] = []
+  const upper: ComputerKeyboardBinding[] = []
+  let codeIndex = 0
+  for (let pitch = EXTENDED_MIN_PITCH; pitch <= EXTENDED_MAX_PITCH; pitch++) {
+    if (isBlackPitch(pitch)) continue
+    const code = EXTENDED_WHITE_KEY_CODES[codeIndex++]
+    if (!code) break
+    const unshifted = getUnshiftedLabel(code, layoutMap)
+    lower.push({
+      code,
+      label: unshifted,
+      offset: pitch - DEFAULT_BASE_PITCH,
+    })
+    const blackPitch = pitch + 1
+    if (blackPitch <= EXTENDED_MAX_PITCH && isBlackPitch(blackPitch)) {
+      upper.push({
+        code,
+        label: getShiftedLabel(code, unshifted),
+        offset: blackPitch - DEFAULT_BASE_PITCH,
+        shift: true,
+      })
+    }
+  }
+  return { lower, upper }
+}
+
+function getUnshiftedLabel(code: string, layoutMap?: KeyboardLayoutMapLike): string {
+  return formatLayoutLabel(layoutMap?.get(code), false) ?? fallbackKeyLabel(code, false)
+}
+
+function getShiftedLabel(code: string, unshifted: string): string {
+  const korean = KOREAN_SHIFT_LABELS[unshifted]
+  if (korean) return korean
+  const symbol = getShiftSymbolLabels()[code] ?? DEFAULT_SHIFT_LABELS[code]
+  if (symbol) return symbol
+  const upper = unshifted.toLocaleUpperCase(getKeyboardLocale())
+  return upper !== unshifted ? upper : `Shift+${unshifted}`
+}
+
+function getShiftSymbolLabels(): Record<string, string> {
+  return getKeyboardLocale().toLowerCase().startsWith('tr')
+    ? TURKISH_SHIFT_LABELS
+    : DEFAULT_SHIFT_LABELS
+}
+
+function getKeyboardLocale(): string {
+  if (typeof navigator === 'undefined') return 'en'
+  return navigator.language || 'en'
+}
+
+function formatLayoutLabel(raw: string | undefined, uppercase: boolean): string | null {
   const value = raw?.trim()
   if (!value) return null
-  if (value.length === 1) return value.toLocaleUpperCase()
+  if (value.length === 1) return uppercase ? value.toLocaleUpperCase(getKeyboardLocale()) : value
   return value.slice(0, 8)
+}
+
+function fallbackKeyLabel(code: string, shifted: boolean): string {
+  if (shifted)
+    return DEFAULT_SHIFT_LABELS[code] ?? fallbackKeyLabel(code, false).toLocaleUpperCase()
+  const named: Record<string, string> = {
+    Backquote: '`',
+    Minus: '-',
+    Equal: '=',
+    BracketLeft: '[',
+    BracketRight: ']',
+    Backslash: '\\',
+    Quote: "'",
+    Comma: ',',
+    Period: '.',
+    Slash: '/',
+    Semicolon: ';',
+  }
+  if (named[code]) return named[code]!
+  if (code.startsWith('Key')) return code.slice(3).toLocaleLowerCase()
+  if (code.startsWith('Digit')) return code.slice(5)
+  return code
+}
+
+function isBlackPitch(pitch: number): boolean {
+  return BLACK_PITCH_CLASSES.has(((pitch % 12) + 12) % 12)
 }
 
 function buildNoteMap(rows: ComputerKeyboardBindingRows): Map<string, number> {
   const noteMap = new Map<string, number>()
   for (const row of [rows.lower, rows.upper]) {
     for (const binding of row) {
-      noteMap.set(binding.code, binding.offset)
+      noteMap.set(noteMapKey(binding.code, binding.shift === true), binding.offset)
     }
   }
   return noteMap
+}
+
+function noteMapKey(code: string, shifted: boolean): string {
+  return `${code}:${shifted ? 'shift' : 'base'}`
 }
 
 function formatKeyLabel(e: KeyboardEvent): string {
@@ -320,6 +507,7 @@ export class ComputerKeyboardInput {
   private pedalHeld = false
   private bindings = getDefaultComputerKeyboardBindings()
   private noteMap = buildNoteMap(this.bindings)
+  private usesShiftBindings = false
 
   constructor(private readonly clock: MasterClock) {}
 
@@ -327,6 +515,9 @@ export class ComputerKeyboardInput {
     this.releaseAllHeld()
     this.bindings = cloneBindings(rows)
     this.noteMap = buildNoteMap(this.bindings)
+    this.usesShiftBindings = rows.lower
+      .concat(rows.upper)
+      .some((binding) => binding.shift === true)
   }
 
   getBindings(): ComputerKeyboardBindingRows {
@@ -395,17 +586,19 @@ export class ComputerKeyboardInput {
       return
     }
 
-    const offset = this.noteMap.get(e.code)
+    const shifted = this.usesShiftBindings && e.shiftKey
+    const heldKey = noteMapKey(e.code, shifted)
+    const offset = this.noteMap.get(heldKey)
     if (offset === undefined) return
 
     e.preventDefault()
     if (e.repeat) return
-    if (this.held.has(e.code)) return
+    if (this.held.has(heldKey)) return
 
     const pitch = 12 * (this.octave.value + 1) + offset
     if (pitch < 21 || pitch > 108) return
 
-    this.held.set(e.code, pitch)
+    this.held.set(heldKey, pitch)
     this.noteOn.set({ pitch, velocity: DEFAULT_VELOCITY, clockTime: this.clock.currentTime })
   }
 
@@ -415,9 +608,18 @@ export class ComputerKeyboardInput {
       this.pedal.set(false)
       return
     }
-    const pitch = this.held.get(e.code)
+    if (this.usesShiftBindings) {
+      this.releaseHeldKey(noteMapKey(e.code, false))
+      this.releaseHeldKey(noteMapKey(e.code, true))
+      return
+    }
+    this.releaseHeldKey(noteMapKey(e.code, false))
+  }
+
+  private releaseHeldKey(key: string): void {
+    const pitch = this.held.get(key)
     if (pitch === undefined) return
-    this.held.delete(e.code)
+    this.held.delete(key)
     this.noteOff.set({ pitch, velocity: 0, clockTime: this.clock.currentTime })
   }
 
@@ -425,7 +627,8 @@ export class ComputerKeyboardInput {
     // Shift reserves letter keys for app-level hotkeys (Shift+R record,
     // Shift+L loop, etc.); without this guard the user would also trigger a
     // note via the FL-style key map whenever they hit a shortcut.
-    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return true
+    if (e.ctrlKey || e.metaKey || e.altKey) return true
+    if (e.shiftKey && !this.usesShiftBindings) return true
     const target = e.target as HTMLElement | null
     if (!target) return false
     const tag = target.tagName

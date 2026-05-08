@@ -1,4 +1,4 @@
-import { createSignal, For } from 'solid-js'
+import { createSignal, For, Show } from 'solid-js'
 import { render } from 'solid-js/web'
 import { LOCALES, type LocaleCode, locale, t } from '../i18n'
 import {
@@ -38,6 +38,7 @@ export interface CustomizeMenuCallbacks {
   onSelectTheme: (index: number) => void
   onSelectParticle: (index: number) => void
   onToggleChord: () => void
+  onToggleExtendedKeyboard: () => void
   onSetKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
   onResetKeyboardBindings: () => void
   onSelectLocale: (code: LocaleCode) => void
@@ -96,6 +97,7 @@ interface MenuProps {
   themeIndex: () => number
   particleIndex: () => number
   chordOn: () => boolean
+  extendedKeyboardOn: () => boolean
   keyboardBindings: () => ComputerKeyboardBindingRows
   editingBinding: () => string | null
   isOpen: () => boolean
@@ -103,6 +105,7 @@ interface MenuProps {
   onSelectTheme: (i: number) => void
   onSelectParticle: (i: number) => void
   onToggleChord: () => void
+  onToggleExtendedKeyboard: () => void
   onEditKeyboardBinding: (key: string | null) => void
   onSetKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
   onResetKeyboardBindings: () => void
@@ -218,73 +221,95 @@ function MenuView(props: MenuProps) {
       <div class="customize-section customize-section--keyboard">
         <div class="customize-section-head">
           <span class="customize-section-label">{t('customize.keyboard')}</span>
-          <button
-            class="customize-keybind-reset"
-            type="button"
-            onKeyDown={(event) => event.stopPropagation()}
-            onClick={() => {
-              props.onEditKeyboardBinding(null)
-              props.onResetKeyboardBindings()
-            }}
-          >
-            {t('customize.keyboard.restore')}
-          </button>
+          <Show when={!props.extendedKeyboardOn()}>
+            <button
+              class="customize-keybind-reset"
+              type="button"
+              onKeyDown={(event) => event.stopPropagation()}
+              onClick={() => {
+                props.onEditKeyboardBinding(null)
+                props.onResetKeyboardBindings()
+              }}
+            >
+              {t('customize.keyboard.restore')}
+            </button>
+          </Show>
         </div>
-        <For each={KEY_BINDING_ROWS}>
-          {(rowInfo) => (
-            <div class="customize-keybind-row">
-              <div class="customize-keybind-row-head">
-                <span class="customize-keybind-row-label">{t(rowInfo.labelKey)}</span>
-              </div>
-              <div
-                class="customize-keybind-grid"
-                style={{
-                  'grid-template-columns': `repeat(${rowInfo.indices.length}, minmax(0, 1fr))`,
-                }}
-              >
-                <For each={rowInfo.indices}>
-                  {(bindingIndex) => {
-                    const fallback = DEFAULT_KEYBOARD_BINDINGS[rowInfo.id][bindingIndex]
-                    if (!fallback) return null
-                    const binding = () =>
-                      props.keyboardBindings()[rowInfo.id][bindingIndex] ?? fallback
-                    const editKey = `${rowInfo.id}:${bindingIndex}`
-                    return (
-                      <button
-                        class="customize-keybind-key"
-                        classList={{
-                          'customize-keybind-key--editing': props.editingBinding() === editKey,
-                        }}
-                        type="button"
-                        title={binding().code}
-                        aria-label={`${binding().label} key binding`}
-                        onClick={() => props.onEditKeyboardBinding(editKey)}
-                        onKeyDown={(event) => {
-                          if (props.editingBinding() !== editKey) {
-                            event.stopPropagation()
-                            return
-                          }
-                          event.preventDefault()
-                          event.stopPropagation()
-                          if (event.code === 'Escape') {
-                            props.onEditKeyboardBinding(null)
-                            return
-                          }
-                          if (props.onSetKeyboardBinding(rowInfo.id, bindingIndex, event))
-                            props.onEditKeyboardBinding(null)
-                        }}
-                      >
-                        {props.editingBinding() === editKey
-                          ? t('customize.keyboard.capture')
-                          : binding().label}
-                      </button>
-                    )
+        <button
+          class="customize-toggle customize-toggle--keyboard"
+          classList={{ 'customize-toggle--on': props.extendedKeyboardOn() }}
+          type="button"
+          aria-pressed={props.extendedKeyboardOn() ? 'true' : 'false'}
+          onClick={() => {
+            props.onEditKeyboardBinding(null)
+            props.onToggleExtendedKeyboard()
+          }}
+        >
+          <span class="customize-toggle-body">
+            <span class="customize-toggle-name">{t('customize.keyboard.extended')}</span>
+            <span class="customize-toggle-sub">{t('customize.keyboard.extended.sub')}</span>
+          </span>
+          <span class="customize-toggle-switch" aria-hidden="true">
+            <span class="customize-toggle-knob"></span>
+          </span>
+        </button>
+        <Show when={!props.extendedKeyboardOn()}>
+          <For each={KEY_BINDING_ROWS}>
+            {(rowInfo) => (
+              <div class="customize-keybind-row">
+                <div class="customize-keybind-row-head">
+                  <span class="customize-keybind-row-label">{t(rowInfo.labelKey)}</span>
+                </div>
+                <div
+                  class="customize-keybind-grid"
+                  style={{
+                    'grid-template-columns': `repeat(${rowInfo.indices.length}, minmax(0, 1fr))`,
                   }}
-                </For>
+                >
+                  <For each={rowInfo.indices}>
+                    {(bindingIndex) => {
+                      const fallback = DEFAULT_KEYBOARD_BINDINGS[rowInfo.id][bindingIndex]
+                      if (!fallback) return null
+                      const binding = () =>
+                        props.keyboardBindings()[rowInfo.id][bindingIndex] ?? fallback
+                      const editKey = `${rowInfo.id}:${bindingIndex}`
+                      return (
+                        <button
+                          class="customize-keybind-key"
+                          classList={{
+                            'customize-keybind-key--editing': props.editingBinding() === editKey,
+                          }}
+                          type="button"
+                          title={binding().code}
+                          aria-label={`${binding().label} key binding`}
+                          onClick={() => props.onEditKeyboardBinding(editKey)}
+                          onKeyDown={(event) => {
+                            if (props.editingBinding() !== editKey) {
+                              event.stopPropagation()
+                              return
+                            }
+                            event.preventDefault()
+                            event.stopPropagation()
+                            if (event.code === 'Escape') {
+                              props.onEditKeyboardBinding(null)
+                              return
+                            }
+                            if (props.onSetKeyboardBinding(rowInfo.id, bindingIndex, event))
+                              props.onEditKeyboardBinding(null)
+                          }}
+                        >
+                          {props.editingBinding() === editKey
+                            ? t('customize.keyboard.capture')
+                            : binding().label}
+                        </button>
+                      )
+                    }}
+                  </For>
+                </div>
               </div>
-            </div>
-          )}
-        </For>
+            )}
+          </For>
+        </Show>
       </div>
     </div>
   )
@@ -304,6 +329,7 @@ export class CustomizeMenu {
   private readonly particleIdxFn: () => number
   private readonly setChordOn: (v: boolean) => void
   private readonly chordOnFn: () => boolean
+  private readonly setExtendedKeyboardOn: (v: boolean) => void
   private readonly setKeyboardBindingsFn: (v: ComputerKeyboardBindingRows) => void
   private readonly setIsOpen: (v: boolean) => void
   private readonly setIsSheet: (v: boolean) => void
@@ -338,6 +364,7 @@ export class CustomizeMenu {
     const [themeIdx, setThemeIdx] = createSignal(0)
     const [particleIdx, setParticleIdx] = createSignal(0)
     const [chordOn, setChordOn] = createSignal(false)
+    const [extendedKeyboardOn, setExtendedKeyboardOn] = createSignal(false)
     const [keyboardBindings, setKeyboardBindings] = createSignal<ComputerKeyboardBindingRows>(
       DEFAULT_KEYBOARD_BINDINGS,
     )
@@ -353,6 +380,7 @@ export class CustomizeMenu {
     this.setParticleIdx = setParticleIdx
     this.chordOnFn = chordOn
     this.setChordOn = setChordOn
+    this.setExtendedKeyboardOn = setExtendedKeyboardOn
     this.setKeyboardBindingsFn = setKeyboardBindings
     this.setIsOpen = setIsOpen
     this.setIsSheet = setIsSheet
@@ -393,6 +421,7 @@ export class CustomizeMenu {
           themeIndex={themeIdx}
           particleIndex={particleIdx}
           chordOn={chordOn}
+          extendedKeyboardOn={extendedKeyboardOn}
           keyboardBindings={keyboardBindings}
           editingBinding={editingBinding}
           isOpen={isOpen}
@@ -400,6 +429,7 @@ export class CustomizeMenu {
           onSelectTheme={(i) => callbacks.onSelectTheme(i)}
           onSelectParticle={(i) => callbacks.onSelectParticle(i)}
           onToggleChord={() => callbacks.onToggleChord()}
+          onToggleExtendedKeyboard={() => callbacks.onToggleExtendedKeyboard()}
           onEditKeyboardBinding={(key) => setEditingBinding(key)}
           onSetKeyboardBinding={(row, index, event) =>
             callbacks.onSetKeyboardBinding(row, index, event)
@@ -435,6 +465,10 @@ export class CustomizeMenu {
 
   setChord(on: boolean): void {
     this.setChordOn(on)
+  }
+
+  setExtendedKeyboard(on: boolean): void {
+    this.setExtendedKeyboardOn(on)
   }
 
   setKeyboardBindings(rows: ComputerKeyboardBindingRows): void {

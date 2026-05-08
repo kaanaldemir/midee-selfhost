@@ -74,6 +74,8 @@ const ptBR: Messages = {
   'customize.keyboard.middle': 'Teclas pretas da oitava baixa',
   'customize.keyboard.upper': 'Teclas brancas da oitava alta',
   'customize.keyboard.numbers': 'Teclas pretas da oitava alta',
+  'customize.keyboard.extended': 'Atalhos estendidos',
+  'customize.keyboard.extended.sub': '61 teclas · segure Shift para as pretas',
   'customize.keyboard.restore': 'Restaurar tudo',
   'customize.keyboard.capture': 'Pressione',
   'customize.language': 'Idioma',

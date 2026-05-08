@@ -25,8 +25,10 @@ import {
   cloneComputerKeyboardBindings,
   type ComputerKeyboardBindingRows,
   ComputerKeyboardInput,
+  getDefaultExtendedComputerKeyboardBindings,
   getDefaultComputerKeyboardBindings,
   getComputerKeyboardPitchLabels,
+  getLayoutAwareExtendedComputerKeyboardBindings,
   getLayoutAwareComputerKeyboardBindings,
   keyEventToComputerKeyboardBinding,
   normalizeComputerKeyboardBindings,
@@ -153,7 +155,9 @@ export class App {
   private particleIndex = particleIndexStore.load()
   private keyRangeCount = keyRangeStore.load()
   private keyboardDefaultBindings = getDefaultComputerKeyboardBindings()
+  private extendedKeyboardBindings = getDefaultExtendedComputerKeyboardBindings()
   private keyboardBindings = keyboardBindingStore.load()
+  private extendedKeyboardOn = extendedKeyboardStore.load()
   private audioPrimed = false
   // Analytics one-shot flags. Reset when a new file is loaded so a user
   // who opens MIDI A then MIDI B gets `first_play` events for both.
@@ -199,7 +203,7 @@ export class App {
     this.midiInput = new MidiInputManager(this.clock)
     this.keyboardInput = new ComputerKeyboardInput(this.clock)
     await this.initKeyboardBindings()
-    this.keyboardInput.setBindings(this.keyboardBindings)
+    this.keyboardInput.setBindings(this.getActiveKeyboardBindings())
 
     this.liveLooper = new LiveLooper(
       this.clock,
@@ -456,6 +460,7 @@ export class App {
         onSelectTheme: (idx) => this.setThemeByIndex(idx),
         onSelectParticle: (idx) => this.setParticleByIndex(idx),
         onToggleChord: () => this.toggleChordOverlay(),
+        onToggleExtendedKeyboard: () => this.toggleExtendedKeyboard(),
         onSetKeyboardBinding: (row, index, event) =>
           this.setKeyboardBindingFromEvent(row, index, event),
         onResetKeyboardBindings: () => this.resetKeyboardBindings(),
@@ -470,6 +475,7 @@ export class App {
       },
     )
     this.customizeMenu.setChord(this.chordOverlayOn)
+    this.customizeMenu.setExtendedKeyboard(this.extendedKeyboardOn)
     this.customizeMenu.setKeyboardBindings(this.keyboardBindings)
 
     this.applyTheme(THEMES[this.themeIndex]!)
@@ -901,6 +907,7 @@ export class App {
   }
 
   private setKeyboardRangeByCount(keyCount: number): void {
+    if (this.extendedKeyboardOn && keyCount < 61) keyCount = 61
     if (!KEY_RANGE_OPTIONS.some((opt) => opt.keyCount === keyCount)) return
     if (keyCount === this.keyRangeCount) return
     this.keyRangeCount = keyCount
@@ -909,12 +916,17 @@ export class App {
   }
 
   private applyKeyboardRange(): void {
+    const effectiveKeyRangeCount =
+      this.extendedKeyboardOn && this.keyRangeCount < 61 ? 61 : this.keyRangeCount
     const option =
-      KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === this.keyRangeCount) ??
-      KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === 37) ??
+      KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === effectiveKeyRangeCount) ??
+      KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === 29) ??
       KEY_RANGE_OPTIONS[0]!
     this.keyRangeMenu?.setCurrent(option.keyCount)
-    const labels = getComputerKeyboardPitchLabels(this.keyboardInput.octave.value, this.keyboardBindings)
+    const labels = getComputerKeyboardPitchLabels(
+      this.keyboardInput.octave.value,
+      this.getActiveKeyboardBindings(),
+    )
     if (this.store.state.mode !== 'live') {
       this.renderer.setPitchRange(21, 108)
       this.renderer.setKeyboardLabels(labels)
@@ -969,17 +981,45 @@ export class App {
   }
 
   private async initKeyboardBindings(): Promise<void> {
-    this.keyboardDefaultBindings = await getLayoutAwareComputerKeyboardBindings()
+    const [standardBindings, extendedBindings] = await Promise.all([
+      getLayoutAwareComputerKeyboardBindings(),
+      getLayoutAwareExtendedComputerKeyboardBindings(),
+    ])
+    this.keyboardDefaultBindings = standardBindings
+    this.extendedKeyboardBindings = extendedBindings
     if (!hasSavedKeyboardBindings()) {
       this.keyboardBindings = cloneComputerKeyboardBindings(this.keyboardDefaultBindings)
     }
+    if (this.extendedKeyboardOn && this.keyRangeCount < 61) {
+      this.keyRangeCount = 61
+      keyRangeStore.save(this.keyRangeCount)
+    }
+  }
+
+  private toggleExtendedKeyboard(): void {
+    this.extendedKeyboardOn = !this.extendedKeyboardOn
+    extendedKeyboardStore.save(this.extendedKeyboardOn)
+    if (this.extendedKeyboardOn && this.keyRangeCount < 61) {
+      this.keyRangeCount = 61
+      keyRangeStore.save(this.keyRangeCount)
+    }
+    this.applyKeyboardInputBindings()
   }
 
   private applyKeyboardBindings(): void {
     keyboardBindingStore.save(this.keyboardBindings)
-    this.keyboardInput.setBindings(this.keyboardBindings)
+    this.applyKeyboardInputBindings()
+  }
+
+  private applyKeyboardInputBindings(): void {
+    this.keyboardInput.setBindings(this.getActiveKeyboardBindings())
+    this.customizeMenu?.setExtendedKeyboard(this.extendedKeyboardOn)
     this.customizeMenu?.setKeyboardBindings(this.keyboardBindings)
     this.applyKeyboardRange()
+  }
+
+  private getActiveKeyboardBindings(): ComputerKeyboardBindingRows {
+    return this.extendedKeyboardOn ? this.extendedKeyboardBindings : this.keyboardBindings
   }
 
   private cycleParticleStyle(): void {
@@ -1632,6 +1672,7 @@ const keyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
   getDefaultComputerKeyboardBindings(),
   normalizeComputerKeyboardBindings,
 )
+const extendedKeyboardStore = booleanPersisted('midee.extendedKeyboardBindings', false)
 const metronomeBpmStore = numberPersisted('midee.metronomeBpm', 120, 40, 240)
 // Chord readout defaults *on*: it's the headline live-mode cue. The
 // boolean store treats "no preference" as the fallback (true), and only
