@@ -14,7 +14,7 @@ import { isNarrowViewport } from './utils'
 // an absolutely-positioned popover anchored under it (or rendered as a
 // bottom sheet on narrow viewports via shared CSS).
 
-const KEY_BINDING_ROWS: readonly Array<{
+const KEY_BINDING_ROWS: ReadonlyArray<{
   id: BindingRow
   labelKey: 'customize.keyboard.lower' | 'customize.keyboard.upper'
 }> = [
@@ -203,7 +203,7 @@ function MenuView(props: MenuProps) {
         </button>
       </div>
 
-      <div class="customize-section customize-section--keyboard" onKeyDown={(event) => event.stopPropagation()}>
+      <div class="customize-section customize-section--keyboard">
         <div class="customize-section-head">
           <span class="customize-section-label">{t('customize.keyboard')}</span>
         </div>
@@ -215,6 +215,7 @@ function MenuView(props: MenuProps) {
                 <button
                   class="customize-keybind-reset"
                   type="button"
+                  onKeyDown={(event) => event.stopPropagation()}
                   onClick={() => {
                     props.onEditKeyboardBinding(null)
                     props.onResetKeyboardBindingRow(rowInfo.id)
