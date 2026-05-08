@@ -73,9 +73,9 @@ const fr: Messages = {
   'customize.chord': 'Affichage des accords',
   'customize.chord.sub': 'Nommer les accords joués · mode direct',
   'customize.keyboard': 'Clavier',
-  'customize.keyboard.lower': 'ZXCV...',
-  'customize.keyboard.upper': 'QWER...',
-  'customize.keyboard.restore': 'Réinitialiser',
+  'customize.keyboard.lower': 'Rangée inférieure',
+  'customize.keyboard.upper': 'Rangée supérieure',
+  'customize.keyboard.restore': 'Tout réinitialiser',
   'customize.keyboard.capture': 'Appuyez',
   'customize.language': 'Langue',
 

@@ -91,9 +91,9 @@ export const en = {
   'customize.chord': 'Chord readout',
   'customize.chord.sub': "Name what's sounding · live mode",
   'customize.keyboard': 'Keyboard',
-  'customize.keyboard.lower': 'ZXCV...',
-  'customize.keyboard.upper': 'QWER...',
-  'customize.keyboard.restore': 'Restore default',
+  'customize.keyboard.lower': 'Lower keyboard row',
+  'customize.keyboard.upper': 'Upper keyboard row',
+  'customize.keyboard.restore': 'Restore defaults',
   'customize.keyboard.capture': 'Press key',
   'customize.language': 'Language',
 

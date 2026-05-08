@@ -17,9 +17,10 @@ import { isNarrowViewport } from './utils'
 const KEY_BINDING_ROWS: ReadonlyArray<{
   id: BindingRow
   labelKey: 'customize.keyboard.lower' | 'customize.keyboard.upper'
+  indices: readonly number[]
 }> = [
-  { id: 'lower', labelKey: 'customize.keyboard.lower' },
-  { id: 'upper', labelKey: 'customize.keyboard.upper' },
+  { id: 'lower', labelKey: 'customize.keyboard.lower', indices: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16] },
+  { id: 'upper', labelKey: 'customize.keyboard.upper', indices: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16] },
 ]
 
 export interface CustomizeMenuCallbacks {
@@ -27,7 +28,7 @@ export interface CustomizeMenuCallbacks {
   onSelectParticle: (index: number) => void
   onToggleChord: () => void
   onSetKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
-  onResetKeyboardBindingRow: (row: BindingRow) => void
+  onResetKeyboardBindings: () => void
   onSelectLocale: (code: LocaleCode) => void
 }
 
@@ -93,7 +94,7 @@ interface MenuProps {
   onToggleChord: () => void
   onEditKeyboardBinding: (key: string | null) => void
   onSetKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
-  onResetKeyboardBindingRow: (row: BindingRow) => void
+  onResetKeyboardBindings: () => void
   onSelectLocale: (code: LocaleCode) => void
   registerEl: (el: HTMLElement) => void
 }
@@ -206,28 +207,30 @@ function MenuView(props: MenuProps) {
       <div class="customize-section customize-section--keyboard">
         <div class="customize-section-head">
           <span class="customize-section-label">{t('customize.keyboard')}</span>
+          <button
+            class="customize-keybind-reset"
+            type="button"
+            onKeyDown={(event) => event.stopPropagation()}
+            onClick={() => {
+              props.onEditKeyboardBinding(null)
+              props.onResetKeyboardBindings()
+            }}
+          >
+            {t('customize.keyboard.restore')}
+          </button>
         </div>
         <For each={KEY_BINDING_ROWS}>
           {(rowInfo) => (
             <div class="customize-keybind-row">
               <div class="customize-keybind-row-head">
                 <span class="customize-keybind-row-label">{t(rowInfo.labelKey)}</span>
-                <button
-                  class="customize-keybind-reset"
-                  type="button"
-                  onKeyDown={(event) => event.stopPropagation()}
-                  onClick={() => {
-                    props.onEditKeyboardBinding(null)
-                    props.onResetKeyboardBindingRow(rowInfo.id)
-                  }}
-                >
-                  {t('customize.keyboard.restore')}
-                </button>
               </div>
               <div class="customize-keybind-grid">
-                <For each={props.keyboardBindings()[rowInfo.id]}>
-                  {(binding, i) => {
-                    const editKey = `${rowInfo.id}:${i()}`
+                <For each={rowInfo.indices}>
+                  {(bindingIndex) => {
+                    const binding = props.keyboardBindings()[rowInfo.id][bindingIndex]
+                    if (!binding) return null
+                    const editKey = `${rowInfo.id}:${bindingIndex}`
                     return (
                       <button
                         class="customize-keybind-key"
@@ -249,7 +252,7 @@ function MenuView(props: MenuProps) {
                             props.onEditKeyboardBinding(null)
                             return
                           }
-                          if (props.onSetKeyboardBinding(rowInfo.id, i(), event))
+                          if (props.onSetKeyboardBinding(rowInfo.id, bindingIndex, event))
                             props.onEditKeyboardBinding(null)
                         }}
                       >
@@ -384,7 +387,7 @@ export class CustomizeMenu {
           onSetKeyboardBinding={(row, index, event) =>
             callbacks.onSetKeyboardBinding(row, index, event)
           }
-          onResetKeyboardBindingRow={(row) => callbacks.onResetKeyboardBindingRow(row)}
+          onResetKeyboardBindings={() => callbacks.onResetKeyboardBindings()}
           onSelectLocale={(code) => callbacks.onSelectLocale(code)}
           registerEl={(el) => {
             this.menu = el

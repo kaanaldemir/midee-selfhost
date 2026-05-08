@@ -24,7 +24,6 @@ import {
   type BindingRow,
   type ComputerKeyboardBindingRows,
   ComputerKeyboardInput,
-  getDefaultComputerKeyboardBindingRow,
   getDefaultComputerKeyboardBindings,
   getComputerKeyboardPitchLabels,
   keyEventToComputerKeyboardBinding,
@@ -455,7 +454,7 @@ export class App {
         onToggleChord: () => this.toggleChordOverlay(),
         onSetKeyboardBinding: (row, index, event) =>
           this.setKeyboardBindingFromEvent(row, index, event),
-        onResetKeyboardBindingRow: (row) => this.resetKeyboardBindingRow(row),
+        onResetKeyboardBindings: () => this.resetKeyboardBindings(),
         // Locale change is rare, and almost every part of the UI was built
         // with the previous locale baked in via template literals. Reload
         // is the simplest correct path: persistence happens in setLocale,
@@ -960,11 +959,8 @@ export class App {
     return true
   }
 
-  private resetKeyboardBindingRow(row: BindingRow): void {
-    this.keyboardBindings = normalizeComputerKeyboardBindings({
-      ...this.keyboardBindings,
-      [row]: getDefaultComputerKeyboardBindingRow(row),
-    })
+  private resetKeyboardBindings(): void {
+    this.keyboardBindings = getDefaultComputerKeyboardBindings()
     this.applyKeyboardBindings()
   }
 

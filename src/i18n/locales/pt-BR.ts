@@ -70,9 +70,9 @@ const ptBR: Messages = {
   'customize.chord': 'Leitura de acordes',
   'customize.chord.sub': 'Nomeia o que está soando · modo ao vivo',
   'customize.keyboard': 'Teclado',
-  'customize.keyboard.lower': 'ZXCV...',
-  'customize.keyboard.upper': 'QWER...',
-  'customize.keyboard.restore': 'Restaurar',
+  'customize.keyboard.lower': 'Fileira inferior',
+  'customize.keyboard.upper': 'Fileira superior',
+  'customize.keyboard.restore': 'Restaurar tudo',
   'customize.keyboard.capture': 'Pressione',
   'customize.language': 'Idioma',
 

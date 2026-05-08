@@ -6629,8 +6629,8 @@ body.canvas-hidden #kbd-resizer {
    shell + .panel-header + horizontal-rule-divided sections. Same header
    padding and hierarchy → consistent across the topbar. */
 .ts-customize-menu {
-  width: 380px;
-  max-width: min(380px, calc(100vw - 24px));
+  width: 320px;
+  max-width: min(320px, calc(100vw - 24px));
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -6859,7 +6859,7 @@ body.canvas-hidden #kbd-resizer {
 
 .customize-keybind-grid {
   display: grid;
-  grid-template-columns: repeat(17, minmax(0, 1fr));
+  grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 3px;
 }
 

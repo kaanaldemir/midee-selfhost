@@ -70,9 +70,9 @@ const es: Messages = {
   'customize.chord': 'Lectura de acordes',
   'customize.chord.sub': 'Nombra lo que está sonando · modo en vivo',
   'customize.keyboard': 'Teclado',
-  'customize.keyboard.lower': 'ZXCV...',
-  'customize.keyboard.upper': 'QWER...',
-  'customize.keyboard.restore': 'Restaurar',
+  'customize.keyboard.lower': 'Fila inferior',
+  'customize.keyboard.upper': 'Fila superior',
+  'customize.keyboard.restore': 'Restaurar todo',
   'customize.keyboard.capture': 'Pulsa tecla',
   'customize.language': 'Idioma',
 
