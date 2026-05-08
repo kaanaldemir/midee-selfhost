@@ -953,8 +953,8 @@ export class App {
       this.renderer.setKeyboardLabels(labels)
       return
     }
-    let min = option.minPitch
-    let max = option.maxPitch
+    let min = this.extendedKeyboardOn ? undefined : option.minPitch
+    let max = this.extendedKeyboardOn ? undefined : option.maxPitch
     if (min === undefined || max === undefined) {
       const pitches = labels.map((label) => label.pitch)
       if (pitches.length === 0) return
@@ -1725,7 +1725,7 @@ const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
   { keyCount: 76, name: 'Extended MIDI', minPitch: 28, maxPitch: 103 },
   { keyCount: 88, name: 'Full piano', minPitch: 21, maxPitch: 108 },
 ]
-const keyRangeStore = numberPersisted('midee.keyboardRange', 29, 25, 88)
+const keyRangeStore = numberPersisted('midee.keyboardRange', 61, 25, 88)
 const KEYBOARD_BINDINGS_STORAGE_KEY = 'midee.keyboardBindings'
 const EXTENDED_KEYBOARD_BINDINGS_STORAGE_KEY = 'midee.extendedKeyboardBindings.map'
 const keyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
@@ -1738,10 +1738,10 @@ const extendedKeyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
   getDefaultExtendedComputerKeyboardBindings(),
   normalizeExtendedComputerKeyboardBindings,
 )
-const extendedKeyboardStore = booleanPersisted('midee.extendedKeyboardBindings', false)
+const extendedKeyboardStore = booleanPersisted('midee.extendedKeyboardBindings', true)
 const extendedKeyboardPreferredStore = booleanPersisted(
   'midee.extendedKeyboardBindingsPreferred',
-  false,
+  true,
 )
 const metronomeBpmStore = numberPersisted('midee.metronomeBpm', 120, 40, 240)
 // Chord readout defaults *on*: it's the headline live-mode cue. The
