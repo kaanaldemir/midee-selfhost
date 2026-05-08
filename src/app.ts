@@ -1625,7 +1625,7 @@ const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
   { keyCount: 76, name: 'Extended MIDI', minPitch: 28, maxPitch: 103 },
   { keyCount: 88, name: 'Full piano', minPitch: 21, maxPitch: 108 },
 ]
-const keyRangeStore = numberPersisted('midee.keyboardRange', 37, 25, 88)
+const keyRangeStore = numberPersisted('midee.keyboardRange', 29, 25, 88)
 const KEYBOARD_BINDINGS_STORAGE_KEY = 'midee.keyboardBindings'
 const keyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
   KEYBOARD_BINDINGS_STORAGE_KEY,
