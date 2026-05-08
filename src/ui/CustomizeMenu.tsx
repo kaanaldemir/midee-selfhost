@@ -1,7 +1,11 @@
 import { createSignal, For } from 'solid-js'
 import { render } from 'solid-js/web'
 import { LOCALES, type LocaleCode, locale, t } from '../i18n'
-import type { BindingRow, ComputerKeyboardBindingRows } from '../midi/ComputerKeyboardInput'
+import {
+  type BindingRow,
+  type ComputerKeyboardBindingRows,
+  getDefaultComputerKeyboardBindings,
+} from '../midi/ComputerKeyboardInput'
 import type { ParticleStyle, ParticleStyleInfo } from '../renderer/ParticleSystem'
 import type { Theme } from '../renderer/theme'
 import { isNarrowViewport } from './utils'
@@ -22,6 +26,7 @@ const KEY_BINDING_ROWS: ReadonlyArray<{
   { id: 'lower', labelKey: 'customize.keyboard.lower', indices: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16] },
   { id: 'upper', labelKey: 'customize.keyboard.upper', indices: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16] },
 ]
+const DEFAULT_KEYBOARD_BINDINGS = getDefaultComputerKeyboardBindings()
 
 export interface CustomizeMenuCallbacks {
   onSelectTheme: (index: number) => void
@@ -228,7 +233,9 @@ function MenuView(props: MenuProps) {
               <div class="customize-keybind-grid">
                 <For each={rowInfo.indices}>
                   {(bindingIndex) => {
-                    const binding = props.keyboardBindings()[rowInfo.id][bindingIndex]
+                    const binding =
+                      props.keyboardBindings()[rowInfo.id][bindingIndex] ??
+                      DEFAULT_KEYBOARD_BINDINGS[rowInfo.id][bindingIndex]
                     if (!binding) return null
                     const editKey = `${rowInfo.id}:${bindingIndex}`
                     return (
@@ -320,10 +327,9 @@ export class CustomizeMenu {
     const [themeIdx, setThemeIdx] = createSignal(0)
     const [particleIdx, setParticleIdx] = createSignal(0)
     const [chordOn, setChordOn] = createSignal(false)
-    const [keyboardBindings, setKeyboardBindings] = createSignal<ComputerKeyboardBindingRows>({
-      lower: [],
-      upper: [],
-    })
+    const [keyboardBindings, setKeyboardBindings] = createSignal<ComputerKeyboardBindingRows>(
+      DEFAULT_KEYBOARD_BINDINGS,
+    )
     const [editingBinding, setEditingBinding] = createSignal<string | null>(null)
     const [isOpen, setIsOpen] = createSignal(false)
     const [isSheet, setIsSheet] = createSignal(false)
