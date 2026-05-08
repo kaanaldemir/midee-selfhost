@@ -83,13 +83,18 @@ export const en = {
   'topStrip.midi.blockedPill': 'Enable MIDI',
   'topStrip.midi.pillFallback': 'MIDI',
 
-  // ── Appearance / customize popover ──────────────────────────
-  'customize.aria': 'Appearance',
-  'customize.title': 'Appearance',
+  // ── Settings / customize popover ──────────────────────────
+  'customize.aria': 'Settings',
+  'customize.title': 'Settings',
   'customize.theme': 'Theme',
   'customize.particles': 'Particles',
   'customize.chord': 'Chord readout',
   'customize.chord.sub': "Name what's sounding · live mode",
+  'customize.keyboard': 'Keyboard',
+  'customize.keyboard.lower': 'ZXCV...',
+  'customize.keyboard.upper': 'QWER...',
+  'customize.keyboard.restore': 'Restore default',
+  'customize.keyboard.capture': 'Press key',
   'customize.language': 'Language',
 
   // ── HUD — tooltips (data-tip) ───────────────────────────────
@@ -455,7 +460,7 @@ export const en = {
   // ── Onboarding ─────────────────────────────────────────────
   // Shown once on first visit if a non-English locale was auto-detected,
   // so the user knows they CAN switch and where to do it.
-  'onboarding.localeDetected': 'Showing in {language} · change in Appearance',
+  'onboarding.localeDetected': 'Showing in {language} · change in Settings',
 } as const
 
 // Keys come from the English source; values are any string so translations

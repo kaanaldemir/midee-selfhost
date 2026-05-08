@@ -6629,11 +6629,12 @@ body.canvas-hidden #kbd-resizer {
    shell + .panel-header + horizontal-rule-divided sections. Same header
    padding and hierarchy → consistent across the topbar. */
 .ts-customize-menu {
-  width: 300px;
+  width: 380px;
+  max-width: min(380px, calc(100vw - 24px));
   padding: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .customize-section {
@@ -6816,6 +6817,84 @@ body.canvas-hidden #kbd-resizer {
   color: var(--accent);
   border-color: var(--accent-glow);
   background: var(--accent-soft);
+}
+
+.customize-section--keyboard {
+  gap: 12px;
+}
+
+.customize-keybind-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.customize-keybind-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.customize-keybind-row-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.customize-keybind-reset {
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.customize-keybind-reset:hover {
+  color: var(--text);
+}
+
+.customize-keybind-grid {
+  display: grid;
+  grid-template-columns: repeat(17, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.customize-keybind-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 24px;
+  padding: 0 2px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.customize-keybind-key:hover {
+  color: var(--text);
+  border-color: var(--border-hi);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.customize-keybind-key--editing {
+  color: var(--accent);
+  border-color: var(--accent-glow);
+  background: var(--accent-soft);
+  font-size: 8px;
 }
 
 /* ─── First-visit locale hint — a subtle bottom toast that tells the user

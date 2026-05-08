@@ -65,13 +65,18 @@ const fr: Messages = {
   'topStrip.midi.blockedPill': 'Activer MIDI',
   'topStrip.midi.pillFallback': 'MIDI',
 
-  // ── Appearance / customize popover ──────────────────────────
-  'customize.aria': 'Apparence',
-  'customize.title': 'Apparence',
+  // ── Settings / customize popover ──────────────────────────
+  'customize.aria': 'Réglages',
+  'customize.title': 'Réglages',
   'customize.theme': 'Thème',
   'customize.particles': 'Particules',
   'customize.chord': 'Affichage des accords',
   'customize.chord.sub': 'Nommer les accords joués · mode direct',
+  'customize.keyboard': 'Clavier',
+  'customize.keyboard.lower': 'ZXCV...',
+  'customize.keyboard.upper': 'QWER...',
+  'customize.keyboard.restore': 'Réinitialiser',
+  'customize.keyboard.capture': 'Appuyez',
   'customize.language': 'Langue',
 
   // ── HUD — tooltips ──────────────────────────────────────────
@@ -421,7 +426,7 @@ const fr: Messages = {
   'toast.recording.empty':
     "Rien d'enregistré — jouez quelques notes pendant que Record est activé.",
 
-  'onboarding.localeDetected': 'Affichage en {language} · changez dans Apparence',
+  'onboarding.localeDetected': 'Affichage en {language} · changez dans Réglages',
 }
 
 export default fr

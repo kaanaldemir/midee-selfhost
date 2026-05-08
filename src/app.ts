@@ -9,7 +9,7 @@ import {
   createLivePerformanceBus,
   type LivePerformanceBus,
 } from './core/performance/LivePerformanceBus'
-import { booleanPersisted, indexPersisted, numberPersisted } from './core/persistence'
+import { booleanPersisted, indexPersisted, jsonPersisted, numberPersisted } from './core/persistence'
 import { fetchSampleMidi, getSample } from './core/samples'
 import type { AppServices } from './core/services'
 import { ENABLE_LEARN_MODE } from './env'
@@ -21,8 +21,15 @@ import type { VideoExporter } from './export/VideoExporter'
 import { setLocale, t } from './i18n'
 import { CaptureFanout } from './midi/CaptureFanout'
 import {
+  type BindingRow,
+  type ComputerKeyboardBindingRows,
   ComputerKeyboardInput,
+  getDefaultComputerKeyboardBindingRow,
+  getDefaultComputerKeyboardBindings,
   getComputerKeyboardPitchLabels,
+  keyEventToComputerKeyboardBinding,
+  normalizeComputerKeyboardBindings,
+  setComputerKeyboardBinding,
 } from './midi/ComputerKeyboardInput'
 import { LiveLooper, type LiveLooperState } from './midi/LiveLooper'
 import { LiveNoteStore } from './midi/LiveNoteStore'
@@ -144,6 +151,7 @@ export class App {
   private instrumentIndex = instrumentIndexStore.load()
   private particleIndex = particleIndexStore.load()
   private keyRangeCount = keyRangeStore.load()
+  private keyboardBindings = keyboardBindingStore.load()
   private audioPrimed = false
   // Analytics one-shot flags. Reset when a new file is loaded so a user
   // who opens MIDI A then MIDI B gets `first_play` events for both.
@@ -188,6 +196,7 @@ export class App {
 
     this.midiInput = new MidiInputManager(this.clock)
     this.keyboardInput = new ComputerKeyboardInput(this.clock)
+    this.keyboardInput.setBindings(this.keyboardBindings)
 
     this.liveLooper = new LiveLooper(
       this.clock,
@@ -444,6 +453,9 @@ export class App {
         onSelectTheme: (idx) => this.setThemeByIndex(idx),
         onSelectParticle: (idx) => this.setParticleByIndex(idx),
         onToggleChord: () => this.toggleChordOverlay(),
+        onSetKeyboardBinding: (row, index, event) =>
+          this.setKeyboardBindingFromEvent(row, index, event),
+        onResetKeyboardBindingRow: (row) => this.resetKeyboardBindingRow(row),
         // Locale change is rare, and almost every part of the UI was built
         // with the previous locale baked in via template literals. Reload
         // is the simplest correct path: persistence happens in setLocale,
@@ -455,6 +467,7 @@ export class App {
       },
     )
     this.customizeMenu.setChord(this.chordOverlayOn)
+    this.customizeMenu.setKeyboardBindings(this.keyboardBindings)
 
     this.applyTheme(THEMES[this.themeIndex]!)
     this.applyInstrument()
@@ -581,7 +594,7 @@ export class App {
       }),
       this.keyboardInput.octave.subscribe((o) => {
         this.controls.updateOctave(o)
-        this.renderer.setKeyboardLabels(getComputerKeyboardPitchLabels(o))
+        this.renderer.setKeyboardLabels(getComputerKeyboardPitchLabels(o, this.keyboardBindings))
         this.applyKeyboardRange()
       }),
       this.inputBus.noteOn.subscribe((evt) => {
@@ -592,7 +605,7 @@ export class App {
       }),
     )
     this.renderer.setKeyboardLabels(
-      getComputerKeyboardPitchLabels(this.keyboardInput.octave.value),
+      getComputerKeyboardPitchLabels(this.keyboardInput.octave.value, this.keyboardBindings),
     )
     this.applyKeyboardRange()
 
@@ -898,7 +911,7 @@ export class App {
       KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === 37) ??
       KEY_RANGE_OPTIONS[0]!
     this.keyRangeMenu?.setCurrent(option.keyCount)
-    const labels = getComputerKeyboardPitchLabels(this.keyboardInput.octave.value)
+    const labels = getComputerKeyboardPitchLabels(this.keyboardInput.octave.value, this.keyboardBindings)
     if (this.store.state.mode !== 'live') {
       this.renderer.setPitchRange(21, 108)
       this.renderer.setKeyboardLabels(labels)
@@ -927,6 +940,39 @@ export class App {
     }
     this.renderer.setPitchRange(min, max)
     this.renderer.setKeyboardLabels(labels)
+  }
+
+  private setKeyboardBindingFromEvent(
+    row: BindingRow,
+    index: number,
+    event: KeyboardEvent,
+  ): boolean {
+    const binding = keyEventToComputerKeyboardBinding(event)
+    if (!binding) return false
+    this.keyboardBindings = setComputerKeyboardBinding(
+      this.keyboardBindings,
+      row,
+      index,
+      binding.code,
+      binding.label,
+    )
+    this.applyKeyboardBindings()
+    return true
+  }
+
+  private resetKeyboardBindingRow(row: BindingRow): void {
+    this.keyboardBindings = normalizeComputerKeyboardBindings({
+      ...this.keyboardBindings,
+      [row]: getDefaultComputerKeyboardBindingRow(row),
+    })
+    this.applyKeyboardBindings()
+  }
+
+  private applyKeyboardBindings(): void {
+    keyboardBindingStore.save(this.keyboardBindings)
+    this.keyboardInput.setBindings(this.keyboardBindings)
+    this.customizeMenu?.setKeyboardBindings(this.keyboardBindings)
+    this.applyKeyboardRange()
   }
 
   private cycleParticleStyle(): void {
@@ -1573,6 +1619,11 @@ const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
   { keyCount: 88, name: 'Full piano', minPitch: 21, maxPitch: 108 },
 ]
 const keyRangeStore = numberPersisted('midee.keyboardRange', 37, 25, 88)
+const keyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
+  'midee.keyboardBindings',
+  getDefaultComputerKeyboardBindings(),
+  normalizeComputerKeyboardBindings,
+)
 const metronomeBpmStore = numberPersisted('midee.metronomeBpm', 120, 40, 240)
 // Chord readout defaults *on*: it's the headline live-mode cue. The
 // boolean store treats "no preference" as the fallback (true), and only

@@ -62,13 +62,18 @@ const es: Messages = {
   'topStrip.midi.blockedPill': 'Activar MIDI',
   'topStrip.midi.pillFallback': 'MIDI',
 
-  // ── Appearance / customize popover ──────────────────────────
-  'customize.aria': 'Apariencia',
-  'customize.title': 'Apariencia',
+  // ── Settings / customize popover ──────────────────────────
+  'customize.aria': 'Ajustes',
+  'customize.title': 'Ajustes',
   'customize.theme': 'Tema',
   'customize.particles': 'Partículas',
   'customize.chord': 'Lectura de acordes',
   'customize.chord.sub': 'Nombra lo que está sonando · modo en vivo',
+  'customize.keyboard': 'Teclado',
+  'customize.keyboard.lower': 'ZXCV...',
+  'customize.keyboard.upper': 'QWER...',
+  'customize.keyboard.restore': 'Restaurar',
+  'customize.keyboard.capture': 'Pulsa tecla',
   'customize.language': 'Idioma',
 
   // ── HUD — tooltips ──────────────────────────────────────────
@@ -416,7 +421,7 @@ const es: Messages = {
   'toast.loop.saved': 'midee-loop.mid',
   'toast.recording.empty': 'Nada grabado — toca algunas notas mientras Grabar está activo.',
 
-  'onboarding.localeDetected': 'Mostrando en {language} · cambia en Apariencia',
+  'onboarding.localeDetected': 'Mostrando en {language} · cambia en Ajustes',
 }
 
 export default es

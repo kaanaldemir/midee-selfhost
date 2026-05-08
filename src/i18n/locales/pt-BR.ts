@@ -62,13 +62,18 @@ const ptBR: Messages = {
   'topStrip.midi.blockedPill': 'Ativar MIDI',
   'topStrip.midi.pillFallback': 'MIDI',
 
-  // ── Appearance / customize popover ──────────────────────────
-  'customize.aria': 'Aparência',
-  'customize.title': 'Aparência',
+  // ── Settings / customize popover ──────────────────────────
+  'customize.aria': 'Configurações',
+  'customize.title': 'Configurações',
   'customize.theme': 'Tema',
   'customize.particles': 'Partículas',
   'customize.chord': 'Leitura de acordes',
   'customize.chord.sub': 'Nomeia o que está soando · modo ao vivo',
+  'customize.keyboard': 'Teclado',
+  'customize.keyboard.lower': 'ZXCV...',
+  'customize.keyboard.upper': 'QWER...',
+  'customize.keyboard.restore': 'Restaurar',
+  'customize.keyboard.capture': 'Pressione',
   'customize.language': 'Idioma',
 
   // ── HUD — tooltips ──────────────────────────────────────────
@@ -416,7 +421,7 @@ const ptBR: Messages = {
   'toast.loop.saved': 'midee-loop.mid',
   'toast.recording.empty': 'Nada gravado — toque algumas notas com o Gravar ativo.',
 
-  'onboarding.localeDetected': 'Mostrando em {language} · troque em Aparência',
+  'onboarding.localeDetected': 'Mostrando em {language} · troque em Configurações',
 }
 
 export default ptBR

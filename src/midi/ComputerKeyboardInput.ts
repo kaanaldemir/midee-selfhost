@@ -7,83 +7,78 @@ import type { MidiNoteEvent } from './MidiInputManager'
 // Two octaves: the bottom row (Z..) plus its black keys on the S..row;
 // the top row (Q..) plus its black keys on the number row.
 const DEFAULT_OCTAVE = 4
-const NOTE_MAP: Record<string, number> = {
-  // Lower octave — starts at C of current octave
-  KeyZ: 0,
-  KeyS: 1,
-  KeyX: 2,
-  KeyD: 3,
-  KeyC: 4,
-  KeyV: 5,
-  KeyG: 6,
-  KeyB: 7,
-  KeyH: 8,
-  KeyN: 9,
-  KeyJ: 10,
-  KeyM: 11,
-  Comma: 12,
-  KeyL: 13,
-  Period: 14,
-  Semicolon: 15,
-  Slash: 16,
-  // Upper octave — starts one octave higher
-  KeyQ: 12,
-  Digit2: 13,
-  KeyW: 14,
-  Digit3: 15,
-  KeyE: 16,
-  KeyR: 17,
-  Digit5: 18,
-  KeyT: 19,
-  Digit6: 20,
-  KeyY: 21,
-  Digit7: 22,
-  KeyU: 23,
-  KeyI: 24,
-  Digit9: 25,
-  KeyO: 26,
-  Digit0: 27,
-  KeyP: 28,
+const DEFAULT_VELOCITY = 0.75
+
+export type BindingRow = 'lower' | 'upper'
+
+export interface ComputerKeyboardBinding {
+  code: string
+  label: string
+  offset: number
 }
 
-type BindingRow = 'lower' | 'upper'
-
-const KEY_DISPLAY: Record<string, { label: string; row: BindingRow }> = {
-  KeyZ: { label: 'Z', row: 'lower' },
-  KeyS: { label: 'S', row: 'lower' },
-  KeyX: { label: 'X', row: 'lower' },
-  KeyD: { label: 'D', row: 'lower' },
-  KeyC: { label: 'C', row: 'lower' },
-  KeyV: { label: 'V', row: 'lower' },
-  KeyG: { label: 'G', row: 'lower' },
-  KeyB: { label: 'B', row: 'lower' },
-  KeyH: { label: 'H', row: 'lower' },
-  KeyN: { label: 'N', row: 'lower' },
-  KeyJ: { label: 'J', row: 'lower' },
-  KeyM: { label: 'M', row: 'lower' },
-  Comma: { label: 'Ö', row: 'lower' },
-  KeyL: { label: 'L', row: 'lower' },
-  Period: { label: 'Ç', row: 'lower' },
-  Semicolon: { label: 'Ş', row: 'lower' },
-  Slash: { label: '.', row: 'lower' },
-  KeyQ: { label: 'Q', row: 'upper' },
-  Digit2: { label: '2', row: 'upper' },
-  KeyW: { label: 'W', row: 'upper' },
-  Digit3: { label: '3', row: 'upper' },
-  KeyE: { label: 'E', row: 'upper' },
-  KeyR: { label: 'R', row: 'upper' },
-  Digit5: { label: '5', row: 'upper' },
-  KeyT: { label: 'T', row: 'upper' },
-  Digit6: { label: '6', row: 'upper' },
-  KeyY: { label: 'Y', row: 'upper' },
-  Digit7: { label: '7', row: 'upper' },
-  KeyU: { label: 'U', row: 'upper' },
-  KeyI: { label: 'I', row: 'upper' },
-  Digit9: { label: '9', row: 'upper' },
-  KeyO: { label: 'O', row: 'upper' },
-  Digit0: { label: '0', row: 'upper' },
-  KeyP: { label: 'P', row: 'upper' },
+export interface ComputerKeyboardBindingRows {
+  lower: ComputerKeyboardBinding[]
+  upper: ComputerKeyboardBinding[]
 }
+
+const DEFAULT_BINDINGS: ComputerKeyboardBindingRows = {
+  lower: [
+    { code: 'KeyZ', label: 'Z', offset: 0 },
+    { code: 'KeyS', label: 'S', offset: 1 },
+    { code: 'KeyX', label: 'X', offset: 2 },
+    { code: 'KeyD', label: 'D', offset: 3 },
+    { code: 'KeyC', label: 'C', offset: 4 },
+    { code: 'KeyV', label: 'V', offset: 5 },
+    { code: 'KeyG', label: 'G', offset: 6 },
+    { code: 'KeyB', label: 'B', offset: 7 },
+    { code: 'KeyH', label: 'H', offset: 8 },
+    { code: 'KeyN', label: 'N', offset: 9 },
+    { code: 'KeyJ', label: 'J', offset: 10 },
+    { code: 'KeyM', label: 'M', offset: 11 },
+    { code: 'Comma', label: 'Ö', offset: 12 },
+    { code: 'KeyL', label: 'L', offset: 13 },
+    { code: 'Period', label: 'Ç', offset: 14 },
+    { code: 'Semicolon', label: 'Ş', offset: 15 },
+    { code: 'Slash', label: '.', offset: 16 },
+  ],
+  upper: [
+    { code: 'KeyQ', label: 'Q', offset: 12 },
+    { code: 'Digit2', label: '2', offset: 13 },
+    { code: 'KeyW', label: 'W', offset: 14 },
+    { code: 'Digit3', label: '3', offset: 15 },
+    { code: 'KeyE', label: 'E', offset: 16 },
+    { code: 'KeyR', label: 'R', offset: 17 },
+    { code: 'Digit5', label: '5', offset: 18 },
+    { code: 'KeyT', label: 'T', offset: 19 },
+    { code: 'Digit6', label: '6', offset: 20 },
+    { code: 'KeyY', label: 'Y', offset: 21 },
+    { code: 'Digit7', label: '7', offset: 22 },
+    { code: 'KeyU', label: 'U', offset: 23 },
+    { code: 'KeyI', label: 'I', offset: 24 },
+    { code: 'Digit9', label: '9', offset: 25 },
+    { code: 'KeyO', label: 'O', offset: 26 },
+    { code: 'Digit0', label: '0', offset: 27 },
+    { code: 'KeyP', label: 'P', offset: 28 },
+  ],
+}
+
+const RESERVED_BINDING_CODES = new Set([
+  'AltLeft',
+  'AltRight',
+  'ArrowDown',
+  'ArrowUp',
+  'CapsLock',
+  'ControlLeft',
+  'ControlRight',
+  'Escape',
+  'MetaLeft',
+  'MetaRight',
+  'ShiftLeft',
+  'ShiftRight',
+  'Space',
+  'Tab',
+])
 
 export interface ComputerKeyboardPitchLabel {
   pitch: number
@@ -92,19 +87,74 @@ export interface ComputerKeyboardPitchLabel {
   upper: readonly string[]
 }
 
-export function getComputerKeyboardPitchLabels(octave: number): ComputerKeyboardPitchLabel[] {
-  const byPitch = new Map<number, { lower: string[]; upper: string[] }>()
-  for (const [code, offset] of Object.entries(NOTE_MAP)) {
-    const display = KEY_DISPLAY[code]
-    if (!display) continue
-    const pitch = 12 * (octave + 1) + offset
-    if (pitch < 21 || pitch > 108) continue
-    let row = byPitch.get(pitch)
-    if (!row) {
-      row = { lower: [], upper: [] }
-      byPitch.set(pitch, row)
+export function getDefaultComputerKeyboardBindings(): ComputerKeyboardBindingRows {
+  return cloneBindings(DEFAULT_BINDINGS)
+}
+
+export function getDefaultComputerKeyboardBindingRow(row: BindingRow): ComputerKeyboardBinding[] {
+  return DEFAULT_BINDINGS[row].map((binding) => ({ ...binding }))
+}
+
+export function normalizeComputerKeyboardBindings(raw: unknown): ComputerKeyboardBindingRows {
+  if (!raw || typeof raw !== 'object') return getDefaultComputerKeyboardBindings()
+  const rows = raw as Partial<Record<BindingRow, unknown>>
+  const normalized = {
+    lower: normalizeBindingRow(rows.lower, DEFAULT_BINDINGS.lower),
+    upper: normalizeBindingRow(rows.upper, DEFAULT_BINDINGS.upper),
+  }
+  return dedupeBindings(normalized)
+}
+
+export function setComputerKeyboardBinding(
+  rows: ComputerKeyboardBindingRows,
+  row: BindingRow,
+  index: number,
+  code: string,
+  label: string,
+): ComputerKeyboardBindingRows {
+  const next = cloneBindings(rows)
+  const target = next[row][index]
+  if (!target || RESERVED_BINDING_CODES.has(code)) return next
+  const oldCode = target.code
+  const oldLabel = target.label
+  for (const rowId of ['lower', 'upper'] as const) {
+    const duplicateIndex = next[rowId].findIndex((binding) => binding.code === code)
+    if (duplicateIndex < 0 || (rowId === row && duplicateIndex === index)) continue
+    next[rowId][duplicateIndex] = {
+      ...next[rowId][duplicateIndex]!,
+      code: oldCode,
+      label: oldLabel,
     }
-    row[display.row].push(display.label)
+  }
+  next[row][index] = { ...target, code, label }
+  return next
+}
+
+export function keyEventToComputerKeyboardBinding(
+  e: KeyboardEvent,
+): { code: string; label: string } | null {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return null
+  if (!e.code || RESERVED_BINDING_CODES.has(e.code)) return null
+  const label = formatKeyLabel(e)
+  return label ? { code: e.code, label } : null
+}
+
+export function getComputerKeyboardPitchLabels(
+  octave: number,
+  rows: ComputerKeyboardBindingRows = DEFAULT_BINDINGS,
+): ComputerKeyboardPitchLabel[] {
+  const byPitch = new Map<number, { lower: string[]; upper: string[] }>()
+  for (const rowId of ['lower', 'upper'] as const) {
+    for (const binding of rows[rowId]) {
+      const pitch = 12 * (octave + 1) + binding.offset
+      if (pitch < 21 || pitch > 108) continue
+      let row = byPitch.get(pitch)
+      if (!row) {
+        row = { lower: [], upper: [] }
+        byPitch.set(pitch, row)
+      }
+      row[rowId].push(binding.label)
+    }
   }
 
   return Array.from(byPitch.entries())
@@ -117,7 +167,91 @@ export function getComputerKeyboardPitchLabels(octave: number): ComputerKeyboard
     }))
 }
 
-const DEFAULT_VELOCITY = 0.75
+function normalizeBindingRow(raw: unknown, fallback: ComputerKeyboardBinding[]): ComputerKeyboardBinding[] {
+  if (!Array.isArray(raw) || raw.length !== fallback.length)
+    return fallback.map((binding) => ({ ...binding }))
+  return fallback.map((defaultBinding, index) => {
+    const item = raw[index]
+    if (!item || typeof item !== 'object') return { ...defaultBinding }
+    const candidate = item as Partial<ComputerKeyboardBinding>
+    if (
+      typeof candidate.code !== 'string' ||
+      candidate.code.length === 0 ||
+      RESERVED_BINDING_CODES.has(candidate.code) ||
+      typeof candidate.label !== 'string' ||
+      candidate.label.length === 0
+    ) {
+      return { ...defaultBinding }
+    }
+    return {
+      code: candidate.code,
+      label: candidate.label.slice(0, 8),
+      offset: defaultBinding.offset,
+    }
+  })
+}
+
+function dedupeBindings(rows: ComputerKeyboardBindingRows): ComputerKeyboardBindingRows {
+  const next = cloneBindings(rows)
+  const seen = new Set<string>()
+  for (const rowId of ['lower', 'upper'] as const) {
+    for (let i = 0; i < next[rowId].length; i++) {
+      const binding = next[rowId][i]!
+      if (!seen.has(binding.code)) {
+        seen.add(binding.code)
+        continue
+      }
+      const replacement =
+        DEFAULT_BINDINGS[rowId].find((candidate) => !seen.has(candidate.code)) ??
+        DEFAULT_BINDINGS[rowId][i]!
+      next[rowId][i] = { ...replacement }
+      seen.add(next[rowId][i]!.code)
+    }
+  }
+  return next
+}
+
+function cloneBindings(rows: ComputerKeyboardBindingRows): ComputerKeyboardBindingRows {
+  return {
+    lower: rows.lower.map((binding) => ({ ...binding })),
+    upper: rows.upper.map((binding) => ({ ...binding })),
+  }
+}
+
+function buildNoteMap(rows: ComputerKeyboardBindingRows): Map<string, number> {
+  const noteMap = new Map<string, number>()
+  for (const row of [rows.lower, rows.upper]) {
+    for (const binding of row) {
+      noteMap.set(binding.code, binding.offset)
+    }
+  }
+  return noteMap
+}
+
+function formatKeyLabel(e: KeyboardEvent): string {
+  if (e.key && e.key.length === 1) return e.key.toLocaleUpperCase()
+  const named: Record<string, string> = {
+    Backspace: 'Bksp',
+    Delete: 'Del',
+    Enter: 'Enter',
+    Equal: '=',
+    Minus: '-',
+    BracketLeft: '[',
+    BracketRight: ']',
+    Backslash: '\\',
+    Backquote: '`',
+    Quote: "'",
+    Comma: ',',
+    Period: '.',
+    Slash: '/',
+    Semicolon: ';',
+  }
+  if (named[e.code]) return named[e.code]!
+  if (e.code.startsWith('Key')) return e.code.slice(3)
+  if (e.code.startsWith('Digit')) return e.code.slice(5)
+  if (e.code.startsWith('Numpad')) return `N${e.code.slice(6)}`
+  return e.key || ''
+}
 
 // Reads the browser keydown/keyup stream and translates it into synthetic
 // MIDI note events. Only active while live mode is enabled.
@@ -131,10 +265,22 @@ export class ComputerKeyboardInput {
   readonly pedal = createEventSignal<boolean>(false)
 
   private active = false
-  private held = new Map<string, number>() // code → pitch (for correct release after octave change)
+  private held = new Map<string, number>() // code -> pitch (for correct release after octave change)
   private pedalHeld = false
+  private bindings = getDefaultComputerKeyboardBindings()
+  private noteMap = buildNoteMap(this.bindings)
 
   constructor(private readonly clock: MasterClock) {}
+
+  setBindings(rows: ComputerKeyboardBindingRows): void {
+    this.releaseAllHeld()
+    this.bindings = cloneBindings(rows)
+    this.noteMap = buildNoteMap(this.bindings)
+  }
+
+  getBindings(): ComputerKeyboardBindingRows {
+    return cloneBindings(this.bindings)
+  }
 
   enable(): void {
     if (this.active) return
@@ -198,7 +344,7 @@ export class ComputerKeyboardInput {
       return
     }
 
-    const offset = NOTE_MAP[e.code]
+    const offset = this.noteMap.get(e.code)
     if (offset === undefined) return
 
     e.preventDefault()

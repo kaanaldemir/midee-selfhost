@@ -1,22 +1,33 @@
 import { createSignal, For } from 'solid-js'
 import { render } from 'solid-js/web'
 import { LOCALES, type LocaleCode, locale, t } from '../i18n'
+import type { BindingRow, ComputerKeyboardBindingRows } from '../midi/ComputerKeyboardInput'
 import type { ParticleStyle, ParticleStyleInfo } from '../renderer/ParticleSystem'
 import type { Theme } from '../renderer/theme'
 import { isNarrowViewport } from './utils'
 
-// Aesthetics popover — collapses theme, particles, and chord overlay (three
-// previously-separate topbar pills) into one trigger. Reduces topbar noise
-// while keeping every option one tap away once opened.
+// Settings popover — collapses theme, particles, chord overlay, and keyboard
+// bindings into one trigger. Reduces topbar noise while keeping options one
+// tap away once opened.
 //
 // Pattern mirrors InstrumentMenu: a pill trigger anchored in the topbar +
 // an absolutely-positioned popover anchored under it (or rendered as a
 // bottom sheet on narrow viewports via shared CSS).
 
+const KEY_BINDING_ROWS: readonly Array<{
+  id: BindingRow
+  labelKey: 'customize.keyboard.lower' | 'customize.keyboard.upper'
+}> = [
+  { id: 'lower', labelKey: 'customize.keyboard.lower' },
+  { id: 'upper', labelKey: 'customize.keyboard.upper' },
+]
+
 export interface CustomizeMenuCallbacks {
   onSelectTheme: (index: number) => void
   onSelectParticle: (index: number) => void
   onToggleChord: () => void
+  onSetKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
+  onResetKeyboardBindingRow: (row: BindingRow) => void
   onSelectLocale: (code: LocaleCode) => void
 }
 
@@ -73,11 +84,16 @@ interface MenuProps {
   themeIndex: () => number
   particleIndex: () => number
   chordOn: () => boolean
+  keyboardBindings: () => ComputerKeyboardBindingRows
+  editingBinding: () => string | null
   isOpen: () => boolean
   isSheet: () => boolean
   onSelectTheme: (i: number) => void
   onSelectParticle: (i: number) => void
   onToggleChord: () => void
+  onEditKeyboardBinding: (key: string | null) => void
+  onSetKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
+  onResetKeyboardBindingRow: (row: BindingRow) => void
   onSelectLocale: (code: LocaleCode) => void
   registerEl: (el: HTMLElement) => void
 }
@@ -186,6 +202,68 @@ function MenuView(props: MenuProps) {
           </span>
         </button>
       </div>
+
+      <div class="customize-section customize-section--keyboard" onKeyDown={(event) => event.stopPropagation()}>
+        <div class="customize-section-head">
+          <span class="customize-section-label">{t('customize.keyboard')}</span>
+        </div>
+        <For each={KEY_BINDING_ROWS}>
+          {(rowInfo) => (
+            <div class="customize-keybind-row">
+              <div class="customize-keybind-row-head">
+                <span class="customize-keybind-row-label">{t(rowInfo.labelKey)}</span>
+                <button
+                  class="customize-keybind-reset"
+                  type="button"
+                  onClick={() => {
+                    props.onEditKeyboardBinding(null)
+                    props.onResetKeyboardBindingRow(rowInfo.id)
+                  }}
+                >
+                  {t('customize.keyboard.restore')}
+                </button>
+              </div>
+              <div class="customize-keybind-grid">
+                <For each={props.keyboardBindings()[rowInfo.id]}>
+                  {(binding, i) => {
+                    const editKey = `${rowInfo.id}:${i()}`
+                    return (
+                      <button
+                        class="customize-keybind-key"
+                        classList={{
+                          'customize-keybind-key--editing': props.editingBinding() === editKey,
+                        }}
+                        type="button"
+                        title={binding.code}
+                        aria-label={`${binding.label} key binding`}
+                        onClick={() => props.onEditKeyboardBinding(editKey)}
+                        onKeyDown={(event) => {
+                          if (props.editingBinding() !== editKey) {
+                            event.stopPropagation()
+                            return
+                          }
+                          event.preventDefault()
+                          event.stopPropagation()
+                          if (event.code === 'Escape') {
+                            props.onEditKeyboardBinding(null)
+                            return
+                          }
+                          if (props.onSetKeyboardBinding(rowInfo.id, i(), event))
+                            props.onEditKeyboardBinding(null)
+                        }}
+                      >
+                        {props.editingBinding() === editKey
+                          ? t('customize.keyboard.capture')
+                          : binding.label}
+                      </button>
+                    )
+                  }}
+                </For>
+              </div>
+            </div>
+          )}
+        </For>
+      </div>
     </div>
   )
 }
@@ -204,6 +282,7 @@ export class CustomizeMenu {
   private readonly particleIdxFn: () => number
   private readonly setChordOn: (v: boolean) => void
   private readonly chordOnFn: () => boolean
+  private readonly setKeyboardBindingsFn: (v: ComputerKeyboardBindingRows) => void
   private readonly setIsOpen: (v: boolean) => void
   private readonly setIsSheet: (v: boolean) => void
   private readonly setLabel: (v: string) => void
@@ -237,6 +316,11 @@ export class CustomizeMenu {
     const [themeIdx, setThemeIdx] = createSignal(0)
     const [particleIdx, setParticleIdx] = createSignal(0)
     const [chordOn, setChordOn] = createSignal(false)
+    const [keyboardBindings, setKeyboardBindings] = createSignal<ComputerKeyboardBindingRows>({
+      lower: [],
+      upper: [],
+    })
+    const [editingBinding, setEditingBinding] = createSignal<string | null>(null)
     const [isOpen, setIsOpen] = createSignal(false)
     const [isSheet, setIsSheet] = createSignal(false)
     const [label, setLabel] = createSignal(t('customize.theme'))
@@ -248,6 +332,7 @@ export class CustomizeMenu {
     this.setParticleIdx = setParticleIdx
     this.chordOnFn = chordOn
     this.setChordOn = setChordOn
+    this.setKeyboardBindingsFn = setKeyboardBindings
     this.setIsOpen = setIsOpen
     this.setIsSheet = setIsSheet
     this.setLabel = setLabel
@@ -287,11 +372,18 @@ export class CustomizeMenu {
           themeIndex={themeIdx}
           particleIndex={particleIdx}
           chordOn={chordOn}
+          keyboardBindings={keyboardBindings}
+          editingBinding={editingBinding}
           isOpen={isOpen}
           isSheet={isSheet}
           onSelectTheme={(i) => callbacks.onSelectTheme(i)}
           onSelectParticle={(i) => callbacks.onSelectParticle(i)}
           onToggleChord={() => callbacks.onToggleChord()}
+          onEditKeyboardBinding={(key) => setEditingBinding(key)}
+          onSetKeyboardBinding={(row, index, event) =>
+            callbacks.onSetKeyboardBinding(row, index, event)
+          }
+          onResetKeyboardBindingRow={(row) => callbacks.onResetKeyboardBindingRow(row)}
           onSelectLocale={(code) => callbacks.onSelectLocale(code)}
           registerEl={(el) => {
             this.menu = el
@@ -322,6 +414,13 @@ export class CustomizeMenu {
 
   setChord(on: boolean): void {
     this.setChordOn(on)
+  }
+
+  setKeyboardBindings(rows: ComputerKeyboardBindingRows): void {
+    this.setKeyboardBindingsFn({
+      lower: rows.lower.map((binding) => ({ ...binding })),
+      upper: rows.upper.map((binding) => ({ ...binding })),
+    })
   }
 
   // ── Open / close ──────────────────────────────────────────────────────
