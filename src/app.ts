@@ -50,6 +50,10 @@ import { DropZone } from './ui/DropZone'
 // the type imports for signatures.
 import type { ExportResolution, ExportSettings } from './ui/ExportModal'
 import { InstrumentMenu } from './ui/InstrumentMenu'
+import {
+  KeyboardRangeMenu,
+  type KeyboardRangeOption,
+} from './ui/KeyboardRangeMenu'
 import { KeyboardResizer } from './ui/KeyboardResizer'
 import type { SessionAction } from './ui/PostSessionModal'
 import { showError, showSuccess } from './ui/Toast'
@@ -81,6 +85,7 @@ export class App {
   )
   private pendingSession: { events: CapturedEvent[]; duration: number } | null = null
   private instrumentMenu!: InstrumentMenu
+  private keyRangeMenu!: KeyboardRangeMenu
   private activeMouseNote: number | null = null
   dropzone!: DropZone
   private midiPickerHandle = lazyHandle(() =>
@@ -138,6 +143,7 @@ export class App {
   private themeIndex = themeIndexStore.load()
   private instrumentIndex = instrumentIndexStore.load()
   private particleIndex = particleIndexStore.load()
+  private keyRangeIndex = keyRangeIndexStore.load()
   private audioPrimed = false
   // Analytics one-shot flags. Reset when a new file is loaded so a user
   // who opens MIDI A then MIDI B gets `first_play` events for both.
@@ -389,6 +395,15 @@ export class App {
     this.instrumentMenu.setLoading(this.synth.loadingInstrument.value)
     this.controls.setInstrumentLoading(this.synth.loadingInstrument.value !== null)
 
+    this.keyRangeMenu = new KeyboardRangeMenu(
+      this.controls.keyRangeSlot,
+      overlay,
+      KEY_RANGE_OPTIONS,
+      KEY_RANGE_OPTIONS[this.keyRangeIndex]?.keyCount ?? KEY_RANGE_OPTIONS[0]!.keyCount,
+    )
+    this.keyRangeMenu.onSelect = (keyCount) => this.setKeyboardRangeByCount(keyCount)
+    this.applyKeyboardRange()
+
     // ExportModal / PostSessionModal / MidiPickerModal are constructed lazily
     // (see ensureXModal helpers further down) — none of them are visible at
     // boot, and keeping them out of the initial chunk shaves ~835 LOC of JSX
@@ -564,6 +579,7 @@ export class App {
       this.keyboardInput.octave.subscribe((o) => {
         this.controls.updateOctave(o)
         this.renderer.setKeyboardLabels(getComputerKeyboardPitchLabels(o))
+        this.applyKeyboardRange()
       }),
       this.inputBus.noteOn.subscribe((evt) => {
         if (evt) this.handleLiveNoteOn(evt)
@@ -575,6 +591,7 @@ export class App {
     this.renderer.setKeyboardLabels(
       getComputerKeyboardPitchLabels(this.keyboardInput.octave.value),
     )
+    this.applyKeyboardRange()
 
     // Mouse/touch on the on-screen keyboard — down to press, move to slide
     // between keys (glissando), up/cancel/leave to release.
@@ -862,6 +879,39 @@ export class App {
     this.controls.updateInstrument(info.name)
     this.instrumentMenu?.setCurrent(info.id)
     void this.synth.setInstrument(info.id)
+  }
+
+  private setKeyboardRangeByCount(keyCount: number): void {
+    const idx = KEY_RANGE_OPTIONS.findIndex((opt) => opt.keyCount === keyCount)
+    if (idx < 0 || idx === this.keyRangeIndex) return
+    this.keyRangeIndex = idx
+    keyRangeIndexStore.save(idx)
+    this.applyKeyboardRange()
+  }
+
+  private applyKeyboardRange(): void {
+    const option = KEY_RANGE_OPTIONS[this.keyRangeIndex] ?? KEY_RANGE_OPTIONS[0]!
+    this.keyRangeMenu?.setCurrent(option.keyCount)
+    const labels = getComputerKeyboardPitchLabels(this.keyboardInput.octave.value)
+    const pitches = labels.map((label) => label.pitch)
+    if (pitches.length === 0) return
+    const assignedMin = Math.min(...pitches)
+    const assignedMax = Math.max(...pitches)
+    const assignedCount = assignedMax - assignedMin + 1
+    const count = Math.min(88, Math.max(option.keyCount, assignedCount))
+    const center = (assignedMin + assignedMax) / 2
+    let min = Math.round(center - (count - 1) / 2)
+    let max = min + count - 1
+    if (min < 21) {
+      min = 21
+      max = min + count - 1
+    }
+    if (max > 108) {
+      max = 108
+      min = max - count + 1
+    }
+    this.renderer.setPitchRange(min, max)
+    this.renderer.setKeyboardLabels(labels)
   }
 
   private cycleParticleStyle(): void {
@@ -1460,6 +1510,7 @@ export class App {
     this.sessionRec.dispose()
     this.metronome.dispose()
     this.chordOverlay.dispose()
+    this.keyRangeMenu.dispose()
     this.customizeMenu.dispose()
     this.clock.dispose()
     this.renderer.destroy()
@@ -1496,6 +1547,15 @@ const particleIndexStore = indexPersisted(
   ),
   PARTICLE_STYLES.length,
 )
+const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
+  { keyCount: 29, name: 'Mapped keys' },
+  { keyCount: 37, name: 'Compact MIDI' },
+  { keyCount: 49, name: 'Small keyboard' },
+  { keyCount: 61, name: 'Standard keyboard' },
+  { keyCount: 76, name: 'Extended keyboard' },
+  { keyCount: 88, name: 'Full piano' },
+]
+const keyRangeIndexStore = indexPersisted('midee.keyboardRange', 0, KEY_RANGE_OPTIONS.length)
 const metronomeBpmStore = numberPersisted('midee.metronomeBpm', 120, 40, 240)
 // Chord readout defaults *on*: it's the headline live-mode cue. The
 // boolean store treats "no preference" as the fallback (true), and only

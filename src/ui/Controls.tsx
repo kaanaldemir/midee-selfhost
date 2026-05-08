@@ -468,6 +468,9 @@ export class Controls {
   get instrumentSlot(): HTMLElement {
     return this.topStripEl.querySelector<HTMLElement>('#ts-instrument-slot')!
   }
+  get keyRangeSlot(): HTMLElement {
+    return this.topStripEl.querySelector<HTMLElement>('#ts-key-range-slot')!
+  }
   get chordSlot(): HTMLElement {
     return this.topStripEl.querySelector<HTMLElement>('#ts-chord-slot')!
   }

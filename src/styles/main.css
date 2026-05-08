@@ -4263,6 +4263,76 @@ body.canvas-hidden #kbd-resizer {
   color: var(--text-muted);
 }
 
+.ts-pill--key-range {
+  min-width: 38px;
+  justify-content: center;
+  padding-inline: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-key-range-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.ts-key-range-menu {
+  width: 220px;
+}
+
+.key-range-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+}
+
+.key-range-item {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 0.14s,
+    color 0.14s;
+}
+
+.key-range-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.key-range-item--on {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.key-range-item-count {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.key-range-item-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
 @keyframes ts-instrument-spin {
   to {
     transform: scale(1) rotate(360deg);

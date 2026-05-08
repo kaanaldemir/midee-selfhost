@@ -207,6 +207,7 @@ export function TopStripView(props: TopStripProps) {
           <span>{t('topStrip.tracks')}</span>
         </button>
         <span id="ts-instrument-slot" />
+        <span id="ts-key-range-slot" />
         <div class="ts-sep" aria-hidden="true" />
         <button
           class="ts-pill ts-pill--midi"
