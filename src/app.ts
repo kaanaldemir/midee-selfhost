@@ -143,7 +143,7 @@ export class App {
   private themeIndex = themeIndexStore.load()
   private instrumentIndex = instrumentIndexStore.load()
   private particleIndex = particleIndexStore.load()
-  private keyRangeIndex = keyRangeIndexStore.load()
+  private keyRangeCount = keyRangeStore.load()
   private audioPrimed = false
   // Analytics one-shot flags. Reset when a new file is loaded so a user
   // who opens MIDI A then MIDI B gets `first_play` events for both.
@@ -399,7 +399,7 @@ export class App {
       this.controls.keyRangeSlot,
       overlay,
       KEY_RANGE_OPTIONS,
-      KEY_RANGE_OPTIONS[this.keyRangeIndex]?.keyCount ?? KEY_RANGE_OPTIONS[0]!.keyCount,
+      this.keyRangeCount,
     )
     this.keyRangeMenu.onSelect = (keyCount) => this.setKeyboardRangeByCount(keyCount)
     this.applyKeyboardRange()
@@ -426,7 +426,10 @@ export class App {
     this.unsubs.push(
       watch(
         () => this.store.state.mode,
-        () => this.applyChordOverlayVisibility(),
+        () => {
+          this.applyChordOverlayVisibility()
+          this.applyKeyboardRange()
+        },
       ),
     )
 
@@ -882,17 +885,25 @@ export class App {
   }
 
   private setKeyboardRangeByCount(keyCount: number): void {
-    const idx = KEY_RANGE_OPTIONS.findIndex((opt) => opt.keyCount === keyCount)
-    if (idx < 0 || idx === this.keyRangeIndex) return
-    this.keyRangeIndex = idx
-    keyRangeIndexStore.save(idx)
+    if (!KEY_RANGE_OPTIONS.some((opt) => opt.keyCount === keyCount)) return
+    if (keyCount === this.keyRangeCount) return
+    this.keyRangeCount = keyCount
+    keyRangeStore.save(keyCount)
     this.applyKeyboardRange()
   }
 
   private applyKeyboardRange(): void {
-    const option = KEY_RANGE_OPTIONS[this.keyRangeIndex] ?? KEY_RANGE_OPTIONS[0]!
+    const option =
+      KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === this.keyRangeCount) ??
+      KEY_RANGE_OPTIONS.find((opt) => opt.keyCount === 37) ??
+      KEY_RANGE_OPTIONS[0]!
     this.keyRangeMenu?.setCurrent(option.keyCount)
     const labels = getComputerKeyboardPitchLabels(this.keyboardInput.octave.value)
+    if (this.store.state.mode !== 'live') {
+      this.renderer.setPitchRange(21, 108)
+      this.renderer.setKeyboardLabels(labels)
+      return
+    }
     const pitches = labels.map((label) => label.pitch)
     if (pitches.length === 0) return
     const assignedMin = Math.min(...pitches)
@@ -1548,6 +1559,7 @@ const particleIndexStore = indexPersisted(
   PARTICLE_STYLES.length,
 )
 const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
+  { keyCount: 25, name: 'Mini keyboard' },
   { keyCount: 29, name: 'Mapped keys' },
   { keyCount: 37, name: 'Compact MIDI' },
   { keyCount: 49, name: 'Small keyboard' },
@@ -1555,7 +1567,7 @@ const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
   { keyCount: 76, name: 'Extended keyboard' },
   { keyCount: 88, name: 'Full piano' },
 ]
-const keyRangeIndexStore = indexPersisted('midee.keyboardRange', 0, KEY_RANGE_OPTIONS.length)
+const keyRangeStore = numberPersisted('midee.keyboardRange', 37, 25, 88)
 const metronomeBpmStore = numberPersisted('midee.metronomeBpm', 120, 40, 240)
 // Chord readout defaults *on*: it's the headline live-mode cue. The
 // boolean store treats "no preference" as the fallback (true), and only
