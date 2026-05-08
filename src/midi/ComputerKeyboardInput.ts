@@ -531,6 +531,7 @@ export class ComputerKeyboardInput {
   private bindings = getDefaultComputerKeyboardBindings()
   private noteMap = buildNoteMap(this.bindings)
   private usesShiftBindings = false
+  private shiftHeldKeysEnabled = true
 
   constructor(private readonly clock: MasterClock) {}
 
@@ -541,6 +542,11 @@ export class ComputerKeyboardInput {
     this.usesShiftBindings = rows.lower
       .concat(rows.upper)
       .some((binding) => binding.shift === true)
+  }
+
+  setShiftHeldKeysEnabled(enabled: boolean): void {
+    if (!enabled) this.releaseShiftedHeldKeys()
+    this.shiftHeldKeysEnabled = enabled
   }
 
   getBindings(): ComputerKeyboardBindingRows {
@@ -608,6 +614,12 @@ export class ComputerKeyboardInput {
       this.shiftOctaveUp()
       return
     }
+    if (this.isShiftKey(e.code)) {
+      if (!this.usesShiftBindings || !this.shiftHeldKeysEnabled) return
+      e.preventDefault()
+      if (!e.repeat) this.pressShiftedHeldKeys()
+      return
+    }
 
     const shifted = this.usesShiftBindings && e.shiftKey
     const heldKey = noteMapKey(e.code, shifted)
@@ -631,6 +643,10 @@ export class ComputerKeyboardInput {
       this.pedal.set(false)
       return
     }
+    if (this.isShiftKey(e.code) && this.usesShiftBindings && this.shiftHeldKeysEnabled) {
+      this.releaseShiftedHeldKeys()
+      return
+    }
     if (this.usesShiftBindings) {
       this.releaseHeldKey(noteMapKey(e.code, false))
       this.releaseHeldKey(noteMapKey(e.code, true))
@@ -644,6 +660,31 @@ export class ComputerKeyboardInput {
     if (pitch === undefined) return
     this.held.delete(key)
     this.noteOff.set({ pitch, velocity: 0, clockTime: this.clock.currentTime })
+  }
+
+  private pressShiftedHeldKeys(): void {
+    for (const key of Array.from(this.held.keys())) {
+      if (!key.endsWith(':base')) continue
+      const code = key.slice(0, -':base'.length)
+      const shiftedKey = noteMapKey(code, true)
+      if (this.held.has(shiftedKey)) continue
+      const offset = this.noteMap.get(shiftedKey)
+      if (offset === undefined) continue
+      const pitch = 12 * (this.octave.value + 1) + offset
+      if (pitch < 21 || pitch > 108) continue
+      this.held.set(shiftedKey, pitch)
+      this.noteOn.set({ pitch, velocity: DEFAULT_VELOCITY, clockTime: this.clock.currentTime })
+    }
+  }
+
+  private releaseShiftedHeldKeys(): void {
+    for (const key of Array.from(this.held.keys())) {
+      if (key.endsWith(':shift')) this.releaseHeldKey(key)
+    }
+  }
+
+  private isShiftKey(code: string): boolean {
+    return code === 'ShiftLeft' || code === 'ShiftRight'
   }
 
   private shouldIgnore(e: KeyboardEvent): boolean {

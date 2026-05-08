@@ -99,6 +99,8 @@ export const en = {
   'customize.keyboard.extended.sub': '61 keys · hold Shift for black keys',
   'customize.keyboard.extended.white': 'Extended white keys',
   'customize.keyboard.extended.black': 'Extended black keys',
+  'customize.keyboard.extended.shiftHeld': 'Shift held keys',
+  'customize.keyboard.extended.shiftHeld.sub': 'Press Shift while holding a key to add its black key',
   'customize.keyboard.restore': 'Restore defaults',
   'customize.keyboard.capture': 'Press key',
   'customize.language': 'Language',

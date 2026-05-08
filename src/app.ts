@@ -162,6 +162,7 @@ export class App {
   private extendedKeyboardOn = extendedKeyboardStore.load()
   private extendedKeyboardPreferred =
     extendedKeyboardPreferredStore.load() || this.extendedKeyboardOn
+  private extendedShiftHeldKeysOn = extendedShiftHeldKeysStore.load()
   private audioPrimed = false
   // Analytics one-shot flags. Reset when a new file is loaded so a user
   // who opens MIDI A then MIDI B gets `first_play` events for both.
@@ -208,6 +209,9 @@ export class App {
     this.keyboardInput = new ComputerKeyboardInput(this.clock)
     await this.initKeyboardBindings()
     this.keyboardInput.setBindings(this.getActiveKeyboardBindings())
+    this.keyboardInput.setShiftHeldKeysEnabled(
+      this.extendedKeyboardOn && this.extendedShiftHeldKeysOn,
+    )
 
     this.liveLooper = new LiveLooper(
       this.clock,
@@ -465,6 +469,7 @@ export class App {
         onSelectParticle: (idx) => this.setParticleByIndex(idx),
         onToggleChord: () => this.toggleChordOverlay(),
         onToggleExtendedKeyboard: () => this.toggleExtendedKeyboard(),
+        onToggleExtendedShiftHeldKeys: () => this.toggleExtendedShiftHeldKeys(),
         onSetKeyboardBinding: (row, index, event) =>
           this.setKeyboardBindingFromEvent(row, index, event),
         onSetExtendedKeyboardBinding: (row, index, event) =>
@@ -482,6 +487,7 @@ export class App {
     )
     this.customizeMenu.setChord(this.chordOverlayOn)
     this.customizeMenu.setExtendedKeyboard(this.extendedKeyboardOn)
+    this.customizeMenu.setExtendedShiftHeldKeys(this.extendedShiftHeldKeysOn)
     this.customizeMenu.setKeyboardBindings(this.keyboardBindings)
     this.customizeMenu.setExtendedKeyboardBindings(this.extendedKeyboardBindings)
 
@@ -1060,6 +1066,12 @@ export class App {
     this.applyKeyboardInputBindings()
   }
 
+  private toggleExtendedShiftHeldKeys(): void {
+    this.extendedShiftHeldKeysOn = !this.extendedShiftHeldKeysOn
+    extendedShiftHeldKeysStore.save(this.extendedShiftHeldKeysOn)
+    this.applyKeyboardInputBindings()
+  }
+
   private applyKeyboardBindings(): void {
     keyboardBindingStore.save(this.keyboardBindings)
     this.applyKeyboardInputBindings()
@@ -1072,7 +1084,11 @@ export class App {
 
   private applyKeyboardInputBindings(): void {
     this.keyboardInput.setBindings(this.getActiveKeyboardBindings())
+    this.keyboardInput.setShiftHeldKeysEnabled(
+      this.extendedKeyboardOn && this.extendedShiftHeldKeysOn,
+    )
     this.customizeMenu?.setExtendedKeyboard(this.extendedKeyboardOn)
+    this.customizeMenu?.setExtendedShiftHeldKeys(this.extendedShiftHeldKeysOn)
     this.customizeMenu?.setKeyboardBindings(this.keyboardBindings)
     this.customizeMenu?.setExtendedKeyboardBindings(this.extendedKeyboardBindings)
     this.applyKeyboardRange()
@@ -1743,6 +1759,7 @@ const extendedKeyboardPreferredStore = booleanPersisted(
   'midee.extendedKeyboardBindingsPreferred',
   true,
 )
+const extendedShiftHeldKeysStore = booleanPersisted('midee.extendedShiftHeldKeys', true)
 const metronomeBpmStore = numberPersisted('midee.metronomeBpm', 120, 40, 240)
 // Chord readout defaults *on*: it's the headline live-mode cue. The
 // boolean store treats "no preference" as the fallback (true), and only

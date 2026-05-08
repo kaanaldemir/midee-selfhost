@@ -78,6 +78,8 @@ const ptBR: Messages = {
   'customize.keyboard.extended.sub': '61 teclas · segure Shift para as pretas',
   'customize.keyboard.extended.white': 'Teclas brancas estendidas',
   'customize.keyboard.extended.black': 'Teclas pretas estendidas',
+  'customize.keyboard.extended.shiftHeld': 'Shift em teclas seguradas',
+  'customize.keyboard.extended.shiftHeld.sub': 'Pressione Shift segurando uma tecla para somar a preta',
   'customize.keyboard.restore': 'Restaurar tudo',
   'customize.keyboard.capture': 'Pressione',
   'customize.language': 'Idioma',

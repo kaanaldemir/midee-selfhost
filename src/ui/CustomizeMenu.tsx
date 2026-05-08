@@ -84,6 +84,7 @@ export interface CustomizeMenuCallbacks {
   onSelectParticle: (index: number) => void
   onToggleChord: () => void
   onToggleExtendedKeyboard: () => void
+  onToggleExtendedShiftHeldKeys: () => void
   onSetKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
   onSetExtendedKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
   onResetKeyboardBindings: () => void
@@ -144,6 +145,7 @@ interface MenuProps {
   particleIndex: () => number
   chordOn: () => boolean
   extendedKeyboardOn: () => boolean
+  extendedShiftHeldKeysOn: () => boolean
   keyboardBindings: () => ComputerKeyboardBindingRows
   extendedKeyboardBindings: () => ComputerKeyboardBindingRows
   editingBinding: () => string | null
@@ -153,6 +155,7 @@ interface MenuProps {
   onSelectParticle: (i: number) => void
   onToggleChord: () => void
   onToggleExtendedKeyboard: () => void
+  onToggleExtendedShiftHeldKeys: () => void
   onEditKeyboardBinding: (key: string | null) => void
   onSetKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
   onSetExtendedKeyboardBinding: (row: BindingRow, index: number, event: KeyboardEvent) => boolean
@@ -328,6 +331,25 @@ function MenuView(props: MenuProps) {
               />
             )}
           </For>
+          <button
+            class="customize-toggle customize-toggle--keyboard"
+            classList={{ 'customize-toggle--on': props.extendedShiftHeldKeysOn() }}
+            type="button"
+            aria-pressed={props.extendedShiftHeldKeysOn() ? 'true' : 'false'}
+            onClick={() => props.onToggleExtendedShiftHeldKeys()}
+          >
+            <span class="customize-toggle-body">
+              <span class="customize-toggle-name">
+                {t('customize.keyboard.extended.shiftHeld')}
+              </span>
+              <span class="customize-toggle-sub">
+                {t('customize.keyboard.extended.shiftHeld.sub')}
+              </span>
+            </span>
+            <span class="customize-toggle-switch" aria-hidden="true">
+              <span class="customize-toggle-knob"></span>
+            </span>
+          </button>
         </Show>
       </div>
     </div>
@@ -413,6 +435,7 @@ export class CustomizeMenu {
   private readonly setChordOn: (v: boolean) => void
   private readonly chordOnFn: () => boolean
   private readonly setExtendedKeyboardOn: (v: boolean) => void
+  private readonly setExtendedShiftHeldKeysOn: (v: boolean) => void
   private readonly setKeyboardBindingsFn: (v: ComputerKeyboardBindingRows) => void
   private readonly setExtendedKeyboardBindingsFn: (v: ComputerKeyboardBindingRows) => void
   private readonly setIsOpen: (v: boolean) => void
@@ -449,6 +472,7 @@ export class CustomizeMenu {
     const [particleIdx, setParticleIdx] = createSignal(0)
     const [chordOn, setChordOn] = createSignal(false)
     const [extendedKeyboardOn, setExtendedKeyboardOn] = createSignal(false)
+    const [extendedShiftHeldKeysOn, setExtendedShiftHeldKeysOn] = createSignal(true)
     const [keyboardBindings, setKeyboardBindings] = createSignal<ComputerKeyboardBindingRows>(
       DEFAULT_KEYBOARD_BINDINGS,
     )
@@ -467,6 +491,7 @@ export class CustomizeMenu {
     this.chordOnFn = chordOn
     this.setChordOn = setChordOn
     this.setExtendedKeyboardOn = setExtendedKeyboardOn
+    this.setExtendedShiftHeldKeysOn = setExtendedShiftHeldKeysOn
     this.setKeyboardBindingsFn = setKeyboardBindings
     this.setExtendedKeyboardBindingsFn = setExtendedKeyboardBindings
     this.setIsOpen = setIsOpen
@@ -509,6 +534,7 @@ export class CustomizeMenu {
           particleIndex={particleIdx}
           chordOn={chordOn}
           extendedKeyboardOn={extendedKeyboardOn}
+          extendedShiftHeldKeysOn={extendedShiftHeldKeysOn}
           keyboardBindings={keyboardBindings}
           extendedKeyboardBindings={extendedKeyboardBindings}
           editingBinding={editingBinding}
@@ -518,6 +544,7 @@ export class CustomizeMenu {
           onSelectParticle={(i) => callbacks.onSelectParticle(i)}
           onToggleChord={() => callbacks.onToggleChord()}
           onToggleExtendedKeyboard={() => callbacks.onToggleExtendedKeyboard()}
+          onToggleExtendedShiftHeldKeys={() => callbacks.onToggleExtendedShiftHeldKeys()}
           onEditKeyboardBinding={(key) => setEditingBinding(key)}
           onSetKeyboardBinding={(row, index, event) =>
             callbacks.onSetKeyboardBinding(row, index, event)
@@ -560,6 +587,10 @@ export class CustomizeMenu {
 
   setExtendedKeyboard(on: boolean): void {
     this.setExtendedKeyboardOn(on)
+  }
+
+  setExtendedShiftHeldKeys(on: boolean): void {
+    this.setExtendedShiftHeldKeysOn(on)
   }
 
   setKeyboardBindings(rows: ComputerKeyboardBindingRows): void {

@@ -78,6 +78,8 @@ const es: Messages = {
   'customize.keyboard.extended.sub': '61 teclas · mantén Shift para negras',
   'customize.keyboard.extended.white': 'Teclas blancas extendidas',
   'customize.keyboard.extended.black': 'Teclas negras extendidas',
+  'customize.keyboard.extended.shiftHeld': 'Shift en teclas sostenidas',
+  'customize.keyboard.extended.shiftHeld.sub': 'Pulsa Shift mientras mantienes una tecla para sumar su negra',
   'customize.keyboard.restore': 'Restaurar todo',
   'customize.keyboard.capture': 'Pulsa tecla',
   'customize.language': 'Idioma',
