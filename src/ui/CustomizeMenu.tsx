@@ -233,10 +233,10 @@ function MenuView(props: MenuProps) {
               <div class="customize-keybind-grid">
                 <For each={rowInfo.indices}>
                   {(bindingIndex) => {
-                    const binding =
-                      props.keyboardBindings()[rowInfo.id][bindingIndex] ??
-                      DEFAULT_KEYBOARD_BINDINGS[rowInfo.id][bindingIndex]
-                    if (!binding) return null
+                    const fallback = DEFAULT_KEYBOARD_BINDINGS[rowInfo.id][bindingIndex]
+                    if (!fallback) return null
+                    const binding = () =>
+                      props.keyboardBindings()[rowInfo.id][bindingIndex] ?? fallback
                     const editKey = `${rowInfo.id}:${bindingIndex}`
                     return (
                       <button
@@ -245,8 +245,8 @@ function MenuView(props: MenuProps) {
                           'customize-keybind-key--editing': props.editingBinding() === editKey,
                         }}
                         type="button"
-                        title={binding.code}
-                        aria-label={`${binding.label} key binding`}
+                        title={binding().code}
+                        aria-label={`${binding().label} key binding`}
                         onClick={() => props.onEditKeyboardBinding(editKey)}
                         onKeyDown={(event) => {
                           if (props.editingBinding() !== editKey) {
@@ -265,7 +265,7 @@ function MenuView(props: MenuProps) {
                       >
                         {props.editingBinding() === editKey
                           ? t('customize.keyboard.capture')
-                          : binding.label}
+                          : binding().label}
                       </button>
                     )
                   }}
