@@ -22,10 +22,12 @@ import { setLocale, t } from './i18n'
 import { CaptureFanout } from './midi/CaptureFanout'
 import {
   type BindingRow,
+  cloneComputerKeyboardBindings,
   type ComputerKeyboardBindingRows,
   ComputerKeyboardInput,
   getDefaultComputerKeyboardBindings,
   getComputerKeyboardPitchLabels,
+  getLayoutAwareComputerKeyboardBindings,
   keyEventToComputerKeyboardBinding,
   normalizeComputerKeyboardBindings,
   setComputerKeyboardBinding,
@@ -150,6 +152,7 @@ export class App {
   private instrumentIndex = instrumentIndexStore.load()
   private particleIndex = particleIndexStore.load()
   private keyRangeCount = keyRangeStore.load()
+  private keyboardDefaultBindings = getDefaultComputerKeyboardBindings()
   private keyboardBindings = keyboardBindingStore.load()
   private audioPrimed = false
   // Analytics one-shot flags. Reset when a new file is loaded so a user
@@ -195,6 +198,7 @@ export class App {
 
     this.midiInput = new MidiInputManager(this.clock)
     this.keyboardInput = new ComputerKeyboardInput(this.clock)
+    await this.initKeyboardBindings()
     this.keyboardInput.setBindings(this.keyboardBindings)
 
     this.liveLooper = new LiveLooper(
@@ -960,8 +964,15 @@ export class App {
   }
 
   private resetKeyboardBindings(): void {
-    this.keyboardBindings = getDefaultComputerKeyboardBindings()
+    this.keyboardBindings = cloneComputerKeyboardBindings(this.keyboardDefaultBindings)
     this.applyKeyboardBindings()
+  }
+
+  private async initKeyboardBindings(): Promise<void> {
+    this.keyboardDefaultBindings = await getLayoutAwareComputerKeyboardBindings()
+    if (!hasSavedKeyboardBindings()) {
+      this.keyboardBindings = cloneComputerKeyboardBindings(this.keyboardDefaultBindings)
+    }
   }
 
   private applyKeyboardBindings(): void {
@@ -1615,8 +1626,9 @@ const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
   { keyCount: 88, name: 'Full piano', minPitch: 21, maxPitch: 108 },
 ]
 const keyRangeStore = numberPersisted('midee.keyboardRange', 37, 25, 88)
+const KEYBOARD_BINDINGS_STORAGE_KEY = 'midee.keyboardBindings'
 const keyboardBindingStore = jsonPersisted<ComputerKeyboardBindingRows>(
-  'midee.keyboardBindings',
+  KEYBOARD_BINDINGS_STORAGE_KEY,
   getDefaultComputerKeyboardBindings(),
   normalizeComputerKeyboardBindings,
 )
@@ -1645,6 +1657,17 @@ function fitPitchRange(midi: import('./core/midi/types').MidiFile): { min: numbe
   return {
     min: Math.max(21, lo - pad),
     max: Math.min(108, hi + pad),
+  }
+}
+
+function hasSavedKeyboardBindings(): boolean {
+  try {
+    const raw = localStorage.getItem(KEYBOARD_BINDINGS_STORAGE_KEY)
+    if (raw === null) return false
+    normalizeComputerKeyboardBindings(JSON.parse(raw))
+    return true
+  } catch {
+    return false
   }
 }
 

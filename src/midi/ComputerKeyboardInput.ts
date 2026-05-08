@@ -91,8 +91,25 @@ export function getDefaultComputerKeyboardBindings(): ComputerKeyboardBindingRow
   return cloneBindings(DEFAULT_BINDINGS)
 }
 
+export async function getLayoutAwareComputerKeyboardBindings(): Promise<ComputerKeyboardBindingRows> {
+  const keyboard = getNavigatorKeyboard()
+  if (!keyboard?.getLayoutMap) return getDefaultComputerKeyboardBindings()
+  try {
+    const layoutMap = await keyboard.getLayoutMap()
+    return applyLayoutLabels(DEFAULT_BINDINGS, layoutMap)
+  } catch {
+    return getDefaultComputerKeyboardBindings()
+  }
+}
+
 export function getDefaultComputerKeyboardBindingRow(row: BindingRow): ComputerKeyboardBinding[] {
   return DEFAULT_BINDINGS[row].map((binding) => ({ ...binding }))
+}
+
+export function cloneComputerKeyboardBindings(
+  rows: ComputerKeyboardBindingRows,
+): ComputerKeyboardBindingRows {
+  return cloneBindings(rows)
 }
 
 export function normalizeComputerKeyboardBindings(raw: unknown): ComputerKeyboardBindingRows {
@@ -216,6 +233,40 @@ function cloneBindings(rows: ComputerKeyboardBindingRows): ComputerKeyboardBindi
     lower: rows.lower.map((binding) => ({ ...binding })),
     upper: rows.upper.map((binding) => ({ ...binding })),
   }
+}
+
+interface KeyboardLayoutMapLike {
+  get(code: string): string | undefined
+}
+
+interface NavigatorKeyboardLike {
+  getLayoutMap?: () => Promise<KeyboardLayoutMapLike>
+}
+
+function getNavigatorKeyboard(): NavigatorKeyboardLike | undefined {
+  if (typeof navigator === 'undefined') return undefined
+  return (navigator as Navigator & { keyboard?: NavigatorKeyboardLike }).keyboard
+}
+
+function applyLayoutLabels(
+  rows: ComputerKeyboardBindingRows,
+  layoutMap: KeyboardLayoutMapLike,
+): ComputerKeyboardBindingRows {
+  const next = cloneBindings(rows)
+  for (const rowId of ['lower', 'upper'] as const) {
+    for (const binding of next[rowId]) {
+      const label = formatLayoutLabel(layoutMap.get(binding.code))
+      if (label) binding.label = label
+    }
+  }
+  return next
+}
+
+function formatLayoutLabel(raw: string | undefined): string | null {
+  const value = raw?.trim()
+  if (!value) return null
+  if (value.length === 1) return value.toLocaleUpperCase()
+  return value.slice(0, 8)
 }
 
 function buildNoteMap(rows: ComputerKeyboardBindingRows): Map<string, number> {
