@@ -155,6 +155,7 @@ export class App {
   private instrumentIndex = instrumentIndexStore.load()
   private particleIndex = particleIndexStore.load()
   private keyRangeCount = keyRangeStore.load()
+  private octaveBeforeMiniKeyboard: number | null = null
   private keyboardDefaultBindings = getDefaultComputerKeyboardBindings()
   private extendedKeyboardDefaultBindings = getDefaultExtendedComputerKeyboardBindings()
   private extendedKeyboardBindings = getDefaultExtendedComputerKeyboardBindings()
@@ -212,6 +213,9 @@ export class App {
     this.keyboardInput.setShiftHeldKeysEnabled(
       this.extendedKeyboardOn && this.extendedShiftHeldKeysOn,
     )
+    if (this.keyRangeCount === MINI_KEY_COUNT) {
+      this.keyboardInput.octave.set(MINI_KEYBOARD_OCTAVE)
+    }
 
     this.liveLooper = new LiveLooper(
       this.clock,
@@ -615,6 +619,10 @@ export class App {
         }
       }),
       this.keyboardInput.octave.subscribe((o) => {
+        if (this.keyRangeCount === MINI_KEY_COUNT && o !== MINI_KEYBOARD_OCTAVE) {
+          this.keyboardInput.octave.set(MINI_KEYBOARD_OCTAVE)
+          return
+        }
         this.controls.updateOctave(o)
         this.renderer.setKeyboardLabels(
           getComputerKeyboardPitchLabels(o, this.getActiveKeyboardBindings()),
@@ -628,6 +636,7 @@ export class App {
         if (evt) this.handleLiveNoteOff(evt)
       }),
     )
+    this.controls.updateOctave(this.keyboardInput.octave.value)
     this.renderer.setKeyboardLabels(
       getComputerKeyboardPitchLabels(
         this.keyboardInput.octave.value,
@@ -927,8 +936,7 @@ export class App {
   private setKeyboardRangeByCount(keyCount: number): void {
     if (!KEY_RANGE_OPTIONS.some((opt) => opt.keyCount === keyCount)) return
     if (keyCount === this.keyRangeCount) return
-    this.keyRangeCount = keyCount
-    keyRangeStore.save(keyCount)
+    this.setKeyboardRangeCount(keyCount)
     if (keyCount < 61 && this.extendedKeyboardOn) {
       this.extendedKeyboardOn = false
       extendedKeyboardStore.save(false)
@@ -942,6 +950,38 @@ export class App {
       return
     }
     this.applyKeyboardRange()
+  }
+
+  private setKeyboardRangeCount(keyCount: number): void {
+    const previousKeyCount = this.keyRangeCount
+    if (keyCount === previousKeyCount) return
+    this.keyRangeCount = keyCount
+    keyRangeStore.save(keyCount)
+    this.applyMiniKeyboardOctaveTransition(previousKeyCount, keyCount)
+  }
+
+  private applyMiniKeyboardOctaveTransition(
+    previousKeyCount: number,
+    nextKeyCount: number,
+  ): void {
+    if (nextKeyCount === MINI_KEY_COUNT && previousKeyCount !== MINI_KEY_COUNT) {
+      const octave = this.keyboardInput.octave.value
+      this.octaveBeforeMiniKeyboard = octave === MINI_KEYBOARD_OCTAVE ? null : octave
+      if (octave !== MINI_KEYBOARD_OCTAVE) {
+        this.keyboardInput.octave.set(MINI_KEYBOARD_OCTAVE)
+      }
+      return
+    }
+    if (previousKeyCount === MINI_KEY_COUNT && nextKeyCount !== MINI_KEY_COUNT) {
+      const restoreOctave = this.octaveBeforeMiniKeyboard
+      this.octaveBeforeMiniKeyboard = null
+      if (
+        restoreOctave !== null &&
+        this.keyboardInput.octave.value === MINI_KEYBOARD_OCTAVE
+      ) {
+        this.keyboardInput.octave.set(restoreOctave)
+      }
+    }
   }
 
   private applyKeyboardRange(): void {
@@ -1060,8 +1100,7 @@ export class App {
     extendedKeyboardStore.save(this.extendedKeyboardOn)
     extendedKeyboardPreferredStore.save(this.extendedKeyboardPreferred)
     if (this.extendedKeyboardOn && this.keyRangeCount < 61) {
-      this.keyRangeCount = 61
-      keyRangeStore.save(this.keyRangeCount)
+      this.setKeyboardRangeCount(61)
     }
     this.applyKeyboardInputBindings()
   }
@@ -1741,6 +1780,8 @@ const KEY_RANGE_OPTIONS: readonly KeyboardRangeOption[] = [
   { keyCount: 76, name: 'Extended MIDI', minPitch: 28, maxPitch: 103 },
   { keyCount: 88, name: 'Full piano', minPitch: 21, maxPitch: 108 },
 ]
+const MINI_KEY_COUNT = 25
+const MINI_KEYBOARD_OCTAVE = 2
 const keyRangeStore = numberPersisted('midee.keyboardRange', 61, 25, 88)
 const KEYBOARD_BINDINGS_STORAGE_KEY = 'midee.keyboardBindings'
 const EXTENDED_KEYBOARD_BINDINGS_STORAGE_KEY = 'midee.extendedKeyboardBindings.map'
