@@ -27,6 +27,22 @@ export type InstrumentId =
   | 'violin'
   | 'flute'
   | 'guitar'
+  | 'bass-electric'
+  | 'bassoon'
+  | 'cello'
+  | 'clarinet'
+  | 'contrabass'
+  | 'french-horn'
+  | 'guitar-electric'
+  | 'guitar-nylon'
+  | 'harmonium'
+  | 'harp'
+  | 'organ'
+  | 'saxophone'
+  | 'trombone'
+  | 'trumpet'
+  | 'tuba'
+  | 'xylophone'
 
 export interface InstrumentInfo {
   id: InstrumentId
@@ -49,6 +65,22 @@ export const INSTRUMENTS: readonly InstrumentInfo[] = [
   { id: 'pad', name: 'Pad', description: 'Airy sustained pad', sampled: false },
   { id: 'pluck', name: 'Pluck', description: 'Bright percussive', sampled: false },
   { id: 'bass', name: 'Bass', description: 'Round low sustain', sampled: false },
+  { id: 'cello', name: 'Cello', description: 'Experimental · bowed strings', sampled: true },
+  { id: 'clarinet', name: 'Clarinet', description: 'Experimental · warm woodwind', sampled: true },
+  { id: 'saxophone', name: 'Saxophone', description: 'Experimental · reedy lead', sampled: true },
+  { id: 'trumpet', name: 'Trumpet', description: 'Experimental · bright brass', sampled: true },
+  { id: 'trombone', name: 'Trombone', description: 'Experimental · mellow brass', sampled: true },
+  { id: 'french-horn', name: 'French Horn', description: 'Experimental · round brass', sampled: true },
+  { id: 'tuba', name: 'Tuba', description: 'Experimental · low brass', sampled: true },
+  { id: 'bassoon', name: 'Bassoon', description: 'Experimental · low woodwind', sampled: true },
+  { id: 'contrabass', name: 'Contrabass', description: 'Experimental · orchestral bass', sampled: true },
+  { id: 'bass-electric', name: 'Electric Bass', description: 'Experimental · finger bass', sampled: true },
+  { id: 'guitar-electric', name: 'Electric Guitar', description: 'Experimental · clean guitar', sampled: true },
+  { id: 'guitar-nylon', name: 'Nylon Guitar', description: 'Experimental · classical guitar', sampled: true },
+  { id: 'harp', name: 'Harp', description: 'Experimental · plucked strings', sampled: true },
+  { id: 'organ', name: 'Organ', description: 'Experimental · sustained keys', sampled: true },
+  { id: 'harmonium', name: 'Harmonium', description: 'Experimental · reed organ', sampled: true },
+  { id: 'xylophone', name: 'Xylophone', description: 'Experimental · bright mallet', sampled: true },
 ]
 
 export interface InstrumentRuntime {
@@ -111,6 +143,38 @@ export async function createInstrument(id: InstrumentId): Promise<InstrumentRunt
       return await createFlute()
     case 'guitar':
       return await createGuitar()
+    case 'bass-electric':
+      return await createExperimentalSampled('bass-electric', createBass)
+    case 'bassoon':
+      return await createExperimentalSampled('bassoon', createTriangleFallback)
+    case 'cello':
+      return await createExperimentalSampled('cello', createStrings)
+    case 'clarinet':
+      return await createExperimentalSampled('clarinet', createTriangleFallback)
+    case 'contrabass':
+      return await createExperimentalSampled('contrabass', createBass)
+    case 'french-horn':
+      return await createExperimentalSampled('french-horn', createStrings)
+    case 'guitar-electric':
+      return await createExperimentalSampled('guitar-electric', createPluck)
+    case 'guitar-nylon':
+      return await createExperimentalSampled('guitar-nylon', createPluck)
+    case 'harmonium':
+      return await createExperimentalSampled('harmonium', createPad)
+    case 'harp':
+      return await createExperimentalSampled('harp', createPluck)
+    case 'organ':
+      return await createExperimentalSampled('organ', createPad)
+    case 'saxophone':
+      return await createExperimentalSampled('saxophone', createTriangleFallback)
+    case 'trombone':
+      return await createExperimentalSampled('trombone', createTriangleFallback)
+    case 'trumpet':
+      return await createExperimentalSampled('trumpet', createTriangleFallback)
+    case 'tuba':
+      return await createExperimentalSampled('tuba', createBass)
+    case 'xylophone':
+      return await createExperimentalSampled('xylophone', createBells)
   }
 }
 
@@ -246,12 +310,13 @@ function createBass(): InstrumentRuntime {
 
 // ── Sampled instruments (lazy-loaded from bundled assets) ──────────────────
 //
-// Samples sourced from the MIT-licensed nbrosowsky/tonejs-instruments project
+// Samples sourced from the nbrosowsky/tonejs-instruments project
 // and committed into `public/instrument-samples/` so the app doesn't depend on
 // any upstream CDN remaining online. Each call builds a Sampler from the
 // instrument's sample map; Tone interpolates between the sampled pitches to
 // cover the full piano range. If a fetch still fails (e.g. offline), the
 // caller falls through to a synth patch so the app never silently drops notes.
+// Sample license: CC-BY 3.0; see `public/instrument-samples/README.md`.
 
 const SAMPLE_BASE = `${import.meta.env.BASE_URL}instrument-samples/`
 const SAMPLE_LOAD_TIMEOUT_MS = 15_000
@@ -457,6 +522,420 @@ const SAMPLED_SPECS: Partial<Record<InstrumentId, SampleSpec>> = {
     release: 0.8,
     volumeDb: -2,
   },
+  'bass-electric': {
+    folder: 'bass-electric',
+    files: [
+      'As1.mp3',
+      'As2.mp3',
+      'As3.mp3',
+      'As4.mp3',
+      'Cs1.mp3',
+      'Cs2.mp3',
+      'Cs3.mp3',
+      'Cs4.mp3',
+      'Cs5.mp3',
+      'E1.mp3',
+      'E2.mp3',
+      'E3.mp3',
+      'E4.mp3',
+      'G1.mp3',
+      'G2.mp3',
+      'G3.mp3',
+      'G4.mp3',
+    ],
+    release: 0.7,
+    volumeDb: -3,
+  },
+  bassoon: {
+    folder: 'bassoon',
+    files: [
+      'A2.mp3',
+      'A3.mp3',
+      'A4.mp3',
+      'C3.mp3',
+      'C4.mp3',
+      'C5.mp3',
+      'E4.mp3',
+      'G2.mp3',
+      'G3.mp3',
+      'G4.mp3',
+    ],
+    release: 1.1,
+    volumeDb: -4,
+  },
+  cello: {
+    folder: 'cello',
+    files: [
+      'A2.mp3',
+      'A3.mp3',
+      'A4.mp3',
+      'As2.mp3',
+      'As3.mp3',
+      'B2.mp3',
+      'B3.mp3',
+      'B4.mp3',
+      'C2.mp3',
+      'C3.mp3',
+      'C4.mp3',
+      'C5.mp3',
+      'Cs3.mp3',
+      'Cs4.mp3',
+      'D2.mp3',
+      'D3.mp3',
+      'D4.mp3',
+      'Ds2.mp3',
+      'Ds3.mp3',
+      'Ds4.mp3',
+      'E2.mp3',
+      'E3.mp3',
+      'E4.mp3',
+      'F2.mp3',
+      'F3.mp3',
+      'F4.mp3',
+      'Fs3.mp3',
+      'Fs4.mp3',
+      'G2.mp3',
+      'G3.mp3',
+      'G4.mp3',
+      'Gs2.mp3',
+      'Gs3.mp3',
+      'Gs4.mp3',
+    ],
+    release: 1.4,
+    volumeDb: -4,
+  },
+  clarinet: {
+    folder: 'clarinet',
+    files: [
+      'As3.mp3',
+      'As4.mp3',
+      'As5.mp3',
+      'D3.mp3',
+      'D4.mp3',
+      'D5.mp3',
+      'D6.mp3',
+      'F3.mp3',
+      'F4.mp3',
+      'F5.mp3',
+      'Fs6.mp3',
+    ],
+    release: 0.9,
+    volumeDb: -4,
+  },
+  contrabass: {
+    folder: 'contrabass',
+    files: [
+      'A2.mp3',
+      'As1.mp3',
+      'B3.mp3',
+      'C2.mp3',
+      'Cs3.mp3',
+      'D2.mp3',
+      'E2.mp3',
+      'E3.mp3',
+      'Fs1.mp3',
+      'Fs2.mp3',
+      'G1.mp3',
+      'Gs2.mp3',
+      'Gs3.mp3',
+    ],
+    release: 1.2,
+    volumeDb: -3,
+  },
+  'french-horn': {
+    folder: 'french-horn',
+    files: [
+      'A1.mp3',
+      'A3.mp3',
+      'C2.mp3',
+      'C4.mp3',
+      'D3.mp3',
+      'D5.mp3',
+      'Ds2.mp3',
+      'F3.mp3',
+      'F5.mp3',
+      'G2.mp3',
+    ],
+    release: 1.2,
+    volumeDb: -5,
+  },
+  'guitar-electric': {
+    folder: 'guitar-electric',
+    files: [
+      'A2.mp3',
+      'A3.mp3',
+      'A4.mp3',
+      'A5.mp3',
+      'C3.mp3',
+      'C4.mp3',
+      'C5.mp3',
+      'C6.mp3',
+      'Cs2.mp3',
+      'Ds3.mp3',
+      'Ds4.mp3',
+      'Ds5.mp3',
+      'E2.mp3',
+      'Fs2.mp3',
+      'Fs3.mp3',
+      'Fs4.mp3',
+      'Fs5.mp3',
+    ],
+    release: 0.7,
+    volumeDb: -3,
+  },
+  'guitar-nylon': {
+    folder: 'guitar-nylon',
+    files: [
+      'A2.mp3',
+      'A3.mp3',
+      'A4.mp3',
+      'A5.mp3',
+      'As5.mp3',
+      'B1.mp3',
+      'B2.mp3',
+      'B3.mp3',
+      'B4.mp3',
+      'Cs3.mp3',
+      'Cs4.mp3',
+      'Cs5.mp3',
+      'D2.mp3',
+      'D3.mp3',
+      'D5.mp3',
+      'Ds4.mp3',
+      'E2.mp3',
+      'E3.mp3',
+      'E4.mp3',
+      'E5.mp3',
+      'Fs2.mp3',
+      'Fs3.mp3',
+      'Fs4.mp3',
+      'Fs5.mp3',
+      'G3.mp3',
+      'G5.mp3',
+      'Gs2.mp3',
+      'Gs4.mp3',
+      'Gs5.mp3',
+    ],
+    release: 0.8,
+    volumeDb: -3,
+  },
+  harmonium: {
+    folder: 'harmonium',
+    files: [
+      'A2.mp3',
+      'A3.mp3',
+      'A4.mp3',
+      'As2.mp3',
+      'As3.mp3',
+      'As4.mp3',
+      'B2.mp3',
+      'B3.mp3',
+      'B4.mp3',
+      'C2.mp3',
+      'C3.mp3',
+      'C4.mp3',
+      'C5.mp3',
+      'Cs2.mp3',
+      'Cs3.mp3',
+      'Cs4.mp3',
+      'Cs5.mp3',
+      'D2.mp3',
+      'D3.mp3',
+      'D4.mp3',
+      'D5.mp3',
+      'Ds2.mp3',
+      'Ds3.mp3',
+      'Ds4.mp3',
+      'E2.mp3',
+      'E3.mp3',
+      'E4.mp3',
+      'F2.mp3',
+      'F3.mp3',
+      'F4.mp3',
+      'Fs2.mp3',
+      'Fs3.mp3',
+      'G2.mp3',
+      'G3.mp3',
+      'G4.mp3',
+      'Gs2.mp3',
+      'Gs3.mp3',
+      'Gs4.mp3',
+    ],
+    attack: 0.02,
+    release: 1.1,
+    volumeDb: -5,
+  },
+  harp: {
+    folder: 'harp',
+    files: [
+      'A2.mp3',
+      'A4.mp3',
+      'A6.mp3',
+      'B1.mp3',
+      'B3.mp3',
+      'B5.mp3',
+      'B6.mp3',
+      'C3.mp3',
+      'C5.mp3',
+      'D2.mp3',
+      'D4.mp3',
+      'D6.mp3',
+      'D7.mp3',
+      'E1.mp3',
+      'E3.mp3',
+      'E5.mp3',
+      'F2.mp3',
+      'F4.mp3',
+      'F6.mp3',
+      'F7.mp3',
+      'G1.mp3',
+      'G3.mp3',
+      'G5.mp3',
+    ],
+    release: 2.2,
+    volumeDb: -4,
+  },
+  organ: {
+    folder: 'organ',
+    files: [
+      'A1.mp3',
+      'A2.mp3',
+      'A3.mp3',
+      'A4.mp3',
+      'A5.mp3',
+      'C1.mp3',
+      'C2.mp3',
+      'C3.mp3',
+      'C4.mp3',
+      'C5.mp3',
+      'C6.mp3',
+      'Ds1.mp3',
+      'Ds2.mp3',
+      'Ds3.mp3',
+      'Ds4.mp3',
+      'Ds5.mp3',
+      'Fs1.mp3',
+      'Fs2.mp3',
+      'Fs3.mp3',
+      'Fs4.mp3',
+      'Fs5.mp3',
+    ],
+    attack: 0.02,
+    release: 0.8,
+    volumeDb: -5,
+  },
+  saxophone: {
+    folder: 'saxophone',
+    files: [
+      'A4.mp3',
+      'A5.mp3',
+      'As3.mp3',
+      'As4.mp3',
+      'B3.mp3',
+      'B4.mp3',
+      'C4.mp3',
+      'C5.mp3',
+      'Cs3.mp3',
+      'Cs4.mp3',
+      'Cs5.mp3',
+      'D3.mp3',
+      'D4.mp3',
+      'D5.mp3',
+      'Ds3.mp3',
+      'Ds4.mp3',
+      'Ds5.mp3',
+      'E3.mp3',
+      'E4.mp3',
+      'E5.mp3',
+      'F3.mp3',
+      'F4.mp3',
+      'F5.mp3',
+      'Fs3.mp3',
+      'Fs4.mp3',
+      'Fs5.mp3',
+      'G3.mp3',
+      'G4.mp3',
+      'G5.mp3',
+      'Gs3.mp3',
+      'Gs4.mp3',
+      'Gs5.mp3',
+    ],
+    release: 0.9,
+    volumeDb: -4,
+  },
+  trombone: {
+    folder: 'trombone',
+    files: [
+      'As1.mp3',
+      'As2.mp3',
+      'As3.mp3',
+      'C3.mp3',
+      'C4.mp3',
+      'Cs2.mp3',
+      'Cs4.mp3',
+      'D3.mp3',
+      'D4.mp3',
+      'Ds2.mp3',
+      'Ds3.mp3',
+      'Ds4.mp3',
+      'F2.mp3',
+      'F3.mp3',
+      'F4.mp3',
+      'Gs2.mp3',
+      'Gs3.mp3',
+    ],
+    release: 1.0,
+    volumeDb: -5,
+  },
+  trumpet: {
+    folder: 'trumpet',
+    files: [
+      'A3.mp3',
+      'A5.mp3',
+      'As4.mp3',
+      'C4.mp3',
+      'C6.mp3',
+      'D5.mp3',
+      'Ds4.mp3',
+      'F3.mp3',
+      'F4.mp3',
+      'F5.mp3',
+      'G4.mp3',
+    ],
+    release: 0.8,
+    volumeDb: -5,
+  },
+  tuba: {
+    folder: 'tuba',
+    files: [
+      'As1.mp3',
+      'As2.mp3',
+      'As3.mp3',
+      'D3.mp3',
+      'D4.mp3',
+      'Ds2.mp3',
+      'F1.mp3',
+      'F2.mp3',
+      'F3.mp3',
+    ],
+    release: 1.0,
+    volumeDb: -4,
+  },
+  xylophone: {
+    folder: 'xylophone',
+    files: [
+      'C5.mp3',
+      'C6.mp3',
+      'C7.mp3',
+      'C8.mp3',
+      'G4.mp3',
+      'G5.mp3',
+      'G6.mp3',
+      'G7.mp3',
+    ],
+    release: 0.3,
+    volumeDb: -5,
+  },
 }
 
 async function createViolin(): Promise<InstrumentRuntime> {
@@ -535,6 +1014,21 @@ async function createGuitar(): Promise<InstrumentRuntime> {
   } catch (err) {
     console.warn('Guitar samples unavailable, falling back to synth pluck', err)
     return createPluck()
+  }
+}
+
+async function createExperimentalSampled(
+  id: InstrumentId,
+  fallback: () => InstrumentRuntime | Promise<InstrumentRuntime>,
+): Promise<InstrumentRuntime> {
+  try {
+    return await createSampled(SAMPLED_SPECS[id]!, (s) => {
+      const reverb = new Reverb({ decay: 1.2, wet: 0.12 })
+      s.chain(reverb, getDestination())
+    })
+  } catch (err) {
+    console.warn(`${id} samples unavailable, falling back to synth`, err)
+    return await fallback()
   }
 }
 
