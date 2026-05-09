@@ -4530,16 +4530,15 @@ body.canvas-hidden #kbd-resizer {
 
 .instrument-item-badge {
   flex-shrink: 0;
-  padding: 1px 5px;
+  padding: 0 4px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   font-size: inherit;
-  font-weight: 700;
-  letter-spacing: inherit;
-  text-transform: uppercase;
-  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.25;
 }
 
 .instrument-item-badge--gm {
