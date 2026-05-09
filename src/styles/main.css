@@ -4458,6 +4458,27 @@ body.canvas-hidden #kbd-resizer {
     color 0.14s;
 }
 
+.instrument-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.instrument-section + .instrument-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.instrument-section-label {
+  padding: 0 10px 3px;
+  color: var(--text-dim);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .instrument-item:hover {
   background: rgba(255, 255, 255, 0.05);
 }
@@ -4514,11 +4535,17 @@ body.canvas-hidden #kbd-resizer {
   border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 14%, transparent);
-  font-size: 9px;
+  font-size: inherit;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: inherit;
   text-transform: uppercase;
-  line-height: 1.35;
+  line-height: 1.2;
+}
+
+.instrument-item-badge--gm {
+  border-color: color-mix(in srgb, #ff5f5f 58%, var(--accent) 18%, transparent);
+  color: color-mix(in srgb, #ff5f5f 82%, var(--accent) 18%);
+  background: color-mix(in srgb, #ff5f5f 16%, transparent);
 }
 
 .instrument-item-check {

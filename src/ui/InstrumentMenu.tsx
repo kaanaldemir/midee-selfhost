@@ -1,6 +1,6 @@
 import { createSignal, For } from 'solid-js'
 import { render } from 'solid-js/web'
-import { INSTRUMENTS, type InstrumentId } from '../audio/SynthEngine'
+import { INSTRUMENTS, type InstrumentId, type InstrumentInfo } from '../audio/SynthEngine'
 import { t } from '../i18n'
 import { icons } from './icons'
 import { isNarrowViewport } from './utils'
@@ -8,6 +8,59 @@ import { isNarrowViewport } from './utils'
 // Topbar instrument picker — a pill trigger + dropdown menu. Available in
 // both live and file modes so users can hear any loaded MIDI played back with
 // a different voice (not just live input).
+
+const GM_EXPERIMENTAL_IDS = new Set<InstrumentId>([
+  'studio-grand',
+  'warm-grand',
+  'bright-grand',
+  'room-grand',
+  'gm-electric-piano-1',
+  'gm-electric-piano-2',
+  'pipe-organ',
+  'cathedral-organ',
+  'chapel-organ',
+  'gm-percussive-organ',
+  'gm-rock-organ',
+  'folk-guitar',
+  'clean-guitar',
+  'jazz-guitar',
+  'rock-guitar',
+  'ambient-guitar',
+  'flamenco-guitar',
+  'gm-muted-guitar',
+  'gm-distortion-guitar',
+])
+
+const isExperimental = (description: string): boolean => description.startsWith('Experimental')
+const isGmExperimental = (id: InstrumentId): boolean => GM_EXPERIMENTAL_IDS.has(id)
+const cleanDescription = (description: string): string =>
+  description.replace(/^Experimental\s*·\s*/, '').replace(/^FluidR3\s+/, '')
+
+interface InstrumentGroup {
+  label: string
+  kind: 'official' | 'experimental' | 'gm'
+  instruments: readonly InstrumentInfo[]
+}
+
+const INSTRUMENT_GROUPS: readonly InstrumentGroup[] = [
+  {
+    label: 'Official',
+    kind: 'official',
+    instruments: INSTRUMENTS.filter((inst) => !isExperimental(inst.description)),
+  },
+  {
+    label: 'Experimental',
+    kind: 'experimental',
+    instruments: INSTRUMENTS.filter(
+      (inst) => isExperimental(inst.description) && !isGmExperimental(inst.id),
+    ),
+  },
+  {
+    label: 'GM Experimental',
+    kind: 'gm',
+    instruments: INSTRUMENTS.filter((inst) => isGmExperimental(inst.id)),
+  },
+]
 
 interface TriggerProps {
   label: () => string
@@ -55,10 +108,6 @@ interface MenuProps {
 }
 
 function MenuView(props: MenuProps) {
-  const isExperimental = (description: string): boolean => description.startsWith('Experimental')
-  const cleanDescription = (description: string): string =>
-    description.replace(/^Experimental\s*·\s*/, '')
-
   return (
     <div
       ref={(el) => props.registerEl(el)}
@@ -72,30 +121,44 @@ function MenuView(props: MenuProps) {
         <span class="panel-label">{t('instrument.panelLabel')}</span>
       </div>
       <div class="instrument-items">
-        <For each={INSTRUMENTS}>
-          {(inst) => (
-            <button
-              class="instrument-item"
-              classList={{
-                'instrument-item--on': props.current() === inst.id,
-                'instrument-item--loading': props.loading() === inst.id,
-              }}
-              data-id={inst.id}
-              type="button"
-              onClick={() => props.onSelect(inst.id)}
-            >
-              <span class="instrument-item-dot" aria-hidden="true"></span>
-              <span class="instrument-item-body">
-                <span class="instrument-item-name">{inst.name}</span>
-                <span class="instrument-item-sub">
-                  {isExperimental(inst.description) && (
-                    <span class="instrument-item-badge">Experimental</span>
-                  )}
-                  <span>{cleanDescription(inst.description)}</span>
-                </span>
-              </span>
-              <span class="instrument-item-check" aria-hidden="true" innerHTML={icons.check()} />
-            </button>
+        <For each={INSTRUMENT_GROUPS}>
+          {(group) => (
+            <section class="instrument-section">
+              <div class="instrument-section-label">{group.label}</div>
+              <For each={group.instruments}>
+                {(inst) => (
+                  <button
+                    class="instrument-item"
+                    classList={{
+                      'instrument-item--on': props.current() === inst.id,
+                      'instrument-item--loading': props.loading() === inst.id,
+                    }}
+                    data-id={inst.id}
+                    type="button"
+                    onClick={() => props.onSelect(inst.id)}
+                  >
+                    <span class="instrument-item-dot" aria-hidden="true"></span>
+                    <span class="instrument-item-body">
+                      <span class="instrument-item-name">{inst.name}</span>
+                      <span class="instrument-item-sub">
+                        {isExperimental(inst.description) && (
+                          <span
+                            class="instrument-item-badge"
+                            classList={{
+                              'instrument-item-badge--gm': group.kind === 'gm',
+                            }}
+                          >
+                            Experimental
+                          </span>
+                        )}
+                        <span>{cleanDescription(inst.description)}</span>
+                      </span>
+                    </span>
+                    <span class="instrument-item-check" aria-hidden="true" innerHTML={icons.check()} />
+                  </button>
+                )}
+              </For>
+            </section>
           )}
         </For>
       </div>
