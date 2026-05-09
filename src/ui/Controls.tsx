@@ -120,7 +120,7 @@ export class Controls {
     const [hudHasDragged, setHudHasDragged] = createSignal(loadHudHasDragged())
     const [instrumentLoading, setInstrumentLoading] = createSignal(false)
     const [keyHintCollapsed, setKeyHintCollapsed] = createSignal(loadKeyHintHidden())
-    const [octave, setOctave] = createSignal(4)
+    const [octave, setOctave] = createSignal(3)
     const [volume, setVolumeSig] = createSignal(store.state.volume ?? 0.8)
     const [speed, setSpeedSig] = createSignal(store.state.speed ?? 1)
     const [zoom, setZoomSig] = createSignal(ZOOM_DEFAULT)

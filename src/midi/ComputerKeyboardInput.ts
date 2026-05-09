@@ -6,7 +6,7 @@ import type { MidiNoteEvent } from './MidiInputManager'
 // FL Studio / DAW-style typing-keyboard layout.
 // Two octaves: the bottom row (Z..) plus its black keys on the S..row;
 // the top row (Q..) plus its black keys on the number row.
-const DEFAULT_OCTAVE = 4
+const DEFAULT_OCTAVE = 3
 const DEFAULT_VELOCITY = 0.75
 
 export type BindingRow = 'lower' | 'upper'
@@ -527,11 +527,13 @@ export class ComputerKeyboardInput {
 
   private active = false
   private held = new Map<string, number>() // code -> pitch (for correct release after octave change)
+  private physicalHeldCodes = new Set<string>()
   private pedalHeld = false
   private bindings = getDefaultComputerKeyboardBindings()
   private noteMap = buildNoteMap(this.bindings)
   private usesShiftBindings = false
   private shiftHeldKeysEnabled = true
+  private shiftDown = false
 
   constructor(private readonly clock: MasterClock) {}
 
@@ -545,7 +547,8 @@ export class ComputerKeyboardInput {
   }
 
   setShiftHeldKeysEnabled(enabled: boolean): void {
-    if (!enabled) this.releaseShiftedHeldKeys()
+    if (enabled === this.shiftHeldKeysEnabled) return
+    this.releaseAllHeld()
     this.shiftHeldKeysEnabled = enabled
   }
 
@@ -588,6 +591,8 @@ export class ComputerKeyboardInput {
       this.noteOff.set({ pitch, velocity: 0, clockTime: t })
     }
     this.held.clear()
+    this.physicalHeldCodes.clear()
+    this.shiftDown = false
   }
 
   private onKeyDown = (e: KeyboardEvent): void => {
@@ -617,7 +622,15 @@ export class ComputerKeyboardInput {
     if (this.isShiftKey(e.code)) {
       if (!this.usesShiftBindings || !this.shiftHeldKeysEnabled) return
       e.preventDefault()
-      if (!e.repeat) this.pressShiftedHeldKeys()
+      this.shiftDown = true
+      if (!e.repeat) this.reconcilePhysicalHeldKeys()
+      return
+    }
+
+    if (this.usesShiftBindings && this.shiftHeldKeysEnabled) {
+      const handled = this.pressPhysicalKey(e.code, e.shiftKey)
+      if (!handled) return
+      e.preventDefault()
       return
     }
 
@@ -644,7 +657,12 @@ export class ComputerKeyboardInput {
       return
     }
     if (this.isShiftKey(e.code) && this.usesShiftBindings && this.shiftHeldKeysEnabled) {
-      this.releaseShiftedHeldKeys()
+      this.shiftDown = false
+      this.reconcilePhysicalHeldKeys()
+      return
+    }
+    if (this.usesShiftBindings && this.shiftHeldKeysEnabled) {
+      this.releasePhysicalKey(e.code)
       return
     }
     if (this.usesShiftBindings) {
@@ -662,25 +680,48 @@ export class ComputerKeyboardInput {
     this.noteOff.set({ pitch, velocity: 0, clockTime: this.clock.currentTime })
   }
 
-  private pressShiftedHeldKeys(): void {
-    for (const key of Array.from(this.held.keys())) {
-      if (!key.endsWith(':base')) continue
-      const code = key.slice(0, -':base'.length)
-      const shiftedKey = noteMapKey(code, true)
-      if (this.held.has(shiftedKey)) continue
-      const offset = this.noteMap.get(shiftedKey)
-      if (offset === undefined) continue
-      const pitch = 12 * (this.octave.value + 1) + offset
-      if (pitch < 21 || pitch > 108) continue
-      this.held.set(shiftedKey, pitch)
-      this.noteOn.set({ pitch, velocity: DEFAULT_VELOCITY, clockTime: this.clock.currentTime })
-    }
+  private pressPhysicalKey(code: string, shiftKey: boolean): boolean {
+    const desiredKey = this.desiredHeldKeyForCode(code, shiftKey)
+    if (!desiredKey) return false
+    this.physicalHeldCodes.add(code)
+    this.reconcilePhysicalKey(code, shiftKey)
+    return true
   }
 
-  private releaseShiftedHeldKeys(): void {
-    for (const key of Array.from(this.held.keys())) {
-      if (key.endsWith(':shift')) this.releaseHeldKey(key)
-    }
+  private releasePhysicalKey(code: string): void {
+    this.physicalHeldCodes.delete(code)
+    this.releaseHeldKey(noteMapKey(code, false))
+    this.releaseHeldKey(noteMapKey(code, true))
+  }
+
+  private reconcilePhysicalHeldKeys(): void {
+    for (const code of this.physicalHeldCodes) this.reconcilePhysicalKey(code, this.shiftDown)
+  }
+
+  private reconcilePhysicalKey(code: string, shiftKey: boolean): void {
+    const desiredKey = this.desiredHeldKeyForCode(code, shiftKey)
+    const baseKey = noteMapKey(code, false)
+    const shiftedKey = noteMapKey(code, true)
+    if (baseKey !== desiredKey) this.releaseHeldKey(baseKey)
+    if (shiftedKey !== desiredKey) this.releaseHeldKey(shiftedKey)
+    if (!desiredKey || this.held.has(desiredKey)) return
+    this.pressHeldKey(desiredKey)
+  }
+
+  private desiredHeldKeyForCode(code: string, shiftKey: boolean): string | null {
+    const shiftedKey = noteMapKey(code, true)
+    if ((this.shiftDown || shiftKey) && this.noteMap.has(shiftedKey)) return shiftedKey
+    const baseKey = noteMapKey(code, false)
+    return this.noteMap.has(baseKey) ? baseKey : null
+  }
+
+  private pressHeldKey(key: string): void {
+    const offset = this.noteMap.get(key)
+    if (offset === undefined) return
+    const pitch = 12 * (this.octave.value + 1) + offset
+    if (pitch < 21 || pitch > 108) return
+    this.held.set(key, pitch)
+    this.noteOn.set({ pitch, velocity: DEFAULT_VELOCITY, clockTime: this.clock.currentTime })
   }
 
   private isShiftKey(code: string): boolean {
