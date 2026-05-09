@@ -31,8 +31,15 @@ const GM_EXPERIMENTAL_IDS = new Set<InstrumentId>([
   'gm-distortion-guitar',
 ])
 
+const BUILT_IN_EXPERIMENTAL_IDS = new Set<InstrumentId>([
+  'drawbar-organ',
+  'jazz-organ',
+  'glass-organ',
+])
+
 const isExperimental = (description: string): boolean => description.startsWith('Experimental')
 const isGmExperimental = (id: InstrumentId): boolean => GM_EXPERIMENTAL_IDS.has(id)
+const isBuiltInExperimental = (id: InstrumentId): boolean => BUILT_IN_EXPERIMENTAL_IDS.has(id)
 const cleanDescription = (description: string): string =>
   description.replace(/^Experimental\s*·\s*/, '').replace(/^FluidR3\s+/, '')
 
@@ -49,14 +56,22 @@ const INSTRUMENT_GROUPS: readonly InstrumentGroup[] = [
     instruments: INSTRUMENTS.filter((inst) => !isExperimental(inst.description)),
   },
   {
-    label: 'Experimental',
+    label: 'Experimental · Tone.js',
     kind: 'experimental',
     instruments: INSTRUMENTS.filter(
-      (inst) => isExperimental(inst.description) && !isGmExperimental(inst.id),
+      (inst) =>
+        isExperimental(inst.description) &&
+        !isGmExperimental(inst.id) &&
+        !isBuiltInExperimental(inst.id),
     ),
   },
   {
-    label: 'GM Experimental',
+    label: 'Experimental · Built-in',
+    kind: 'experimental',
+    instruments: INSTRUMENTS.filter((inst) => isBuiltInExperimental(inst.id)),
+  },
+  {
+    label: 'Experimental · FluidR3',
     kind: 'gm',
     instruments: INSTRUMENTS.filter((inst) => isGmExperimental(inst.id)),
   },
