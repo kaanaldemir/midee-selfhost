@@ -3,6 +3,8 @@
 
 import {
   Chorus,
+  Distortion,
+  FeedbackDelay,
   Filter,
   FMSynth,
   getContext,
@@ -37,6 +39,12 @@ export type InstrumentId =
   | 'drawbar-organ'
   | 'jazz-organ'
   | 'glass-organ'
+  | 'folk-guitar'
+  | 'clean-guitar'
+  | 'jazz-guitar'
+  | 'rock-guitar'
+  | 'ambient-guitar'
+  | 'flamenco-guitar'
   | 'bass-electric'
   | 'bassoon'
   | 'cello'
@@ -101,6 +109,12 @@ export const INSTRUMENTS: readonly InstrumentInfo[] = [
   { id: 'drawbar-organ', name: 'Drawbar Organ', description: 'Experimental · handmade organ', sampled: false },
   { id: 'jazz-organ', name: 'Jazz Organ', description: 'Experimental · handmade organ', sampled: false },
   { id: 'glass-organ', name: 'Glass Organ', description: 'Experimental · handmade organ', sampled: false },
+  { id: 'folk-guitar', name: 'Folk Guitar', description: 'Experimental · sampled acoustic', sampled: true },
+  { id: 'clean-guitar', name: 'Clean Guitar', description: 'Experimental · sampled electric', sampled: true },
+  { id: 'jazz-guitar', name: 'Jazz Guitar', description: 'Experimental · sampled electric', sampled: true },
+  { id: 'rock-guitar', name: 'Rock Guitar', description: 'Experimental · sampled electric', sampled: true },
+  { id: 'ambient-guitar', name: 'Ambient Guitar', description: 'Experimental · sampled electric', sampled: true },
+  { id: 'flamenco-guitar', name: 'Flamenco Guitar', description: 'Experimental · sampled nylon', sampled: true },
 ]
 
 export interface InstrumentRuntime {
@@ -183,6 +197,18 @@ export async function createInstrument(id: InstrumentId): Promise<InstrumentRunt
       return createJazzOrgan()
     case 'glass-organ':
       return createGlassOrgan()
+    case 'folk-guitar':
+      return await createGuitarSampledVariant('folk-guitar', 'folk')
+    case 'clean-guitar':
+      return await createGuitarSampledVariant('clean-guitar', 'clean')
+    case 'jazz-guitar':
+      return await createGuitarSampledVariant('jazz-guitar', 'jazz')
+    case 'rock-guitar':
+      return await createGuitarSampledVariant('rock-guitar', 'rock')
+    case 'ambient-guitar':
+      return await createGuitarSampledVariant('ambient-guitar', 'ambient')
+    case 'flamenco-guitar':
+      return await createGuitarSampledVariant('flamenco-guitar', 'flamenco')
     case 'bass-electric':
       return await createExperimentalSampled('bass-electric', createBass)
     case 'bassoon':
@@ -1135,6 +1161,37 @@ const SAMPLED_SPECS: Partial<Record<InstrumentId, SampleSpec>> = {
   },
 }
 
+SAMPLED_SPECS['folk-guitar'] = {
+  ...SAMPLED_SPECS.guitar!,
+  release: 1.05,
+  volumeDb: -3,
+}
+SAMPLED_SPECS['clean-guitar'] = {
+  ...SAMPLED_SPECS['guitar-electric']!,
+  release: 0.75,
+  volumeDb: -4,
+}
+SAMPLED_SPECS['jazz-guitar'] = {
+  ...SAMPLED_SPECS['guitar-electric']!,
+  release: 0.9,
+  volumeDb: -5,
+}
+SAMPLED_SPECS['rock-guitar'] = {
+  ...SAMPLED_SPECS['guitar-electric']!,
+  release: 0.65,
+  volumeDb: -6,
+}
+SAMPLED_SPECS['ambient-guitar'] = {
+  ...SAMPLED_SPECS['guitar-electric']!,
+  release: 1.7,
+  volumeDb: -7,
+}
+SAMPLED_SPECS['flamenco-guitar'] = {
+  ...SAMPLED_SPECS['guitar-nylon']!,
+  release: 0.45,
+  volumeDb: -3,
+}
+
 async function createViolin(): Promise<InstrumentRuntime> {
   try {
     return await createSampled(SAMPLED_SPECS.violin!, (s) => {
@@ -1309,6 +1366,53 @@ async function createOrganSampledVariant(
   } catch (err) {
     console.warn(`${id} samples unavailable, falling back to handmade organ`, err)
     return createDrawbarOrgan()
+  }
+}
+
+async function createGuitarSampledVariant(
+  id: InstrumentId,
+  tone: 'folk' | 'clean' | 'jazz' | 'rock' | 'ambient' | 'flamenco',
+): Promise<InstrumentRuntime> {
+  try {
+    return await createSampled(SAMPLED_SPECS[id]!, (s) => {
+      if (tone === 'folk') {
+        const filter = new Filter({ frequency: 4200, type: 'lowpass', rolloff: -12, Q: 0.2 })
+        const reverb = new Reverb({ decay: 1.35, wet: 0.12 })
+        s.chain(filter, reverb, getDestination())
+        return
+      }
+      if (tone === 'clean') {
+        const chorus = new Chorus(0.7, 2.4, 0.18).start()
+        const reverb = new Reverb({ decay: 1.2, wet: 0.1 })
+        s.chain(chorus, reverb, getDestination())
+        return
+      }
+      if (tone === 'jazz') {
+        const filter = new Filter({ frequency: 2100, type: 'lowpass', rolloff: -24, Q: 0.28 })
+        const reverb = new Reverb({ decay: 1.5, wet: 0.16 })
+        s.chain(filter, reverb, getDestination())
+        return
+      }
+      if (tone === 'rock') {
+        const drive = new Distortion(0.35)
+        const filter = new Filter({ frequency: 4600, type: 'lowpass', rolloff: -12, Q: 0.2 })
+        s.chain(drive, filter, getDestination())
+        return
+      }
+      if (tone === 'ambient') {
+        const chorus = new Chorus(0.45, 1.5, 0.42).start()
+        const delay = new FeedbackDelay('8n', 0.28)
+        const reverb = new Reverb({ decay: 4.4, wet: 0.38 })
+        s.chain(chorus, delay, reverb, getDestination())
+        return
+      }
+      const filter = new Filter({ frequency: 6200, type: 'lowpass', rolloff: -12, Q: 0.12 })
+      const reverb = new Reverb({ decay: 0.75, wet: 0.08 })
+      s.chain(filter, reverb, getDestination())
+    })
+  } catch (err) {
+    console.warn(`${id} samples unavailable, falling back to synth pluck`, err)
+    return createPluck()
   }
 }
 
