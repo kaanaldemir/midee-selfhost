@@ -3,8 +3,6 @@
 
 import {
   Chorus,
-  Distortion,
-  FeedbackDelay,
   Filter,
   FMSynth,
   getContext,
@@ -45,6 +43,12 @@ export type InstrumentId =
   | 'rock-guitar'
   | 'ambient-guitar'
   | 'flamenco-guitar'
+  | 'gm-electric-piano-1'
+  | 'gm-electric-piano-2'
+  | 'gm-percussive-organ'
+  | 'gm-rock-organ'
+  | 'gm-muted-guitar'
+  | 'gm-distortion-guitar'
   | 'bass-electric'
   | 'bassoon'
   | 'cello'
@@ -99,22 +103,28 @@ export const INSTRUMENTS: readonly InstrumentInfo[] = [
   { id: 'organ', name: 'Organ', description: 'Experimental · sustained keys', sampled: true },
   { id: 'harmonium', name: 'Harmonium', description: 'Experimental · reed organ', sampled: true },
   { id: 'xylophone', name: 'Xylophone', description: 'Experimental · bright mallet', sampled: true },
-  { id: 'studio-grand', name: 'Studio Grand', description: 'Experimental · full sampled piano', sampled: true },
-  { id: 'warm-grand', name: 'Warm Grand', description: 'Experimental · soft sampled piano', sampled: true },
-  { id: 'bright-grand', name: 'Bright Grand', description: 'Experimental · clear sampled piano', sampled: true },
-  { id: 'room-grand', name: 'Room Grand', description: 'Experimental · spacious sampled piano', sampled: true },
-  { id: 'pipe-organ', name: 'Pipe Organ', description: 'Experimental · sampled organ', sampled: true },
-  { id: 'cathedral-organ', name: 'Cathedral Organ', description: 'Experimental · large sampled organ', sampled: true },
-  { id: 'chapel-organ', name: 'Chapel Organ', description: 'Experimental · intimate sampled organ', sampled: true },
+  { id: 'studio-grand', name: 'GM Grand Piano', description: 'Experimental · FluidR3 acoustic grand', sampled: true },
+  { id: 'warm-grand', name: 'GM Bright Piano', description: 'Experimental · FluidR3 bright grand', sampled: true },
+  { id: 'bright-grand', name: 'Electric Grand', description: 'Experimental · FluidR3 electric grand', sampled: true },
+  { id: 'room-grand', name: 'Honkytonk Piano', description: 'Experimental · FluidR3 honkytonk', sampled: true },
+  { id: 'gm-electric-piano-1', name: 'Electric Piano 1', description: 'Experimental · FluidR3 tine piano', sampled: true },
+  { id: 'gm-electric-piano-2', name: 'Electric Piano 2', description: 'Experimental · FluidR3 FM piano', sampled: true },
+  { id: 'pipe-organ', name: 'Church Organ', description: 'Experimental · FluidR3 church organ', sampled: true },
+  { id: 'cathedral-organ', name: 'GM Drawbar Organ', description: 'Experimental · FluidR3 drawbar', sampled: true },
+  { id: 'chapel-organ', name: 'Reed Organ', description: 'Experimental · FluidR3 reed organ', sampled: true },
+  { id: 'gm-percussive-organ', name: 'Percussive Organ', description: 'Experimental · FluidR3 percussive', sampled: true },
+  { id: 'gm-rock-organ', name: 'Rock Organ', description: 'Experimental · FluidR3 rock organ', sampled: true },
   { id: 'drawbar-organ', name: 'Drawbar Organ', description: 'Experimental · handmade organ', sampled: false },
   { id: 'jazz-organ', name: 'Jazz Organ', description: 'Experimental · handmade organ', sampled: false },
   { id: 'glass-organ', name: 'Glass Organ', description: 'Experimental · handmade organ', sampled: false },
-  { id: 'folk-guitar', name: 'Folk Guitar', description: 'Experimental · sampled acoustic', sampled: true },
-  { id: 'clean-guitar', name: 'Clean Guitar', description: 'Experimental · sampled electric', sampled: true },
-  { id: 'jazz-guitar', name: 'Jazz Guitar', description: 'Experimental · sampled electric', sampled: true },
-  { id: 'rock-guitar', name: 'Rock Guitar', description: 'Experimental · sampled electric', sampled: true },
-  { id: 'ambient-guitar', name: 'Ambient Guitar', description: 'Experimental · sampled electric', sampled: true },
-  { id: 'flamenco-guitar', name: 'Flamenco Guitar', description: 'Experimental · sampled nylon', sampled: true },
+  { id: 'folk-guitar', name: 'Steel Guitar', description: 'Experimental · FluidR3 steel acoustic', sampled: true },
+  { id: 'clean-guitar', name: 'Clean Electric Guitar', description: 'Experimental · FluidR3 clean electric', sampled: true },
+  { id: 'jazz-guitar', name: 'Jazz Electric Guitar', description: 'Experimental · FluidR3 jazz electric', sampled: true },
+  { id: 'rock-guitar', name: 'Overdriven Guitar', description: 'Experimental · FluidR3 overdrive', sampled: true },
+  { id: 'ambient-guitar', name: 'Guitar Harmonics', description: 'Experimental · FluidR3 harmonics', sampled: true },
+  { id: 'flamenco-guitar', name: 'Nylon Guitar GM', description: 'Experimental · FluidR3 nylon', sampled: true },
+  { id: 'gm-muted-guitar', name: 'Muted Guitar', description: 'Experimental · FluidR3 muted electric', sampled: true },
+  { id: 'gm-distortion-guitar', name: 'Distortion Guitar', description: 'Experimental · FluidR3 distortion', sampled: true },
 ]
 
 export interface InstrumentRuntime {
@@ -178,19 +188,27 @@ export async function createInstrument(id: InstrumentId): Promise<InstrumentRunt
     case 'guitar':
       return await createGuitar()
     case 'studio-grand':
-      return await createPianoSampledVariant('studio-grand', 'studio')
+      return await createExperimentalSampled('studio-grand', createPiano)
     case 'warm-grand':
-      return await createPianoSampledVariant('warm-grand', 'warm')
+      return await createExperimentalSampled('warm-grand', createPiano)
     case 'bright-grand':
-      return await createPianoSampledVariant('bright-grand', 'bright')
+      return await createExperimentalSampled('bright-grand', createDigitalPiano)
     case 'room-grand':
-      return await createPianoSampledVariant('room-grand', 'room')
+      return await createExperimentalSampled('room-grand', createRhodes)
+    case 'gm-electric-piano-1':
+      return await createExperimentalSampled('gm-electric-piano-1', createRhodes)
+    case 'gm-electric-piano-2':
+      return await createExperimentalSampled('gm-electric-piano-2', createRhodes)
     case 'pipe-organ':
-      return await createOrganSampledVariant('pipe-organ', 'pipe')
+      return await createExperimentalSampled('pipe-organ', createDrawbarOrgan)
     case 'cathedral-organ':
-      return await createOrganSampledVariant('cathedral-organ', 'cathedral')
+      return await createExperimentalSampled('cathedral-organ', createDrawbarOrgan)
     case 'chapel-organ':
-      return await createOrganSampledVariant('chapel-organ', 'chapel')
+      return await createExperimentalSampled('chapel-organ', createDrawbarOrgan)
+    case 'gm-percussive-organ':
+      return await createExperimentalSampled('gm-percussive-organ', createJazzOrgan)
+    case 'gm-rock-organ':
+      return await createExperimentalSampled('gm-rock-organ', createDrawbarOrgan)
     case 'drawbar-organ':
       return createDrawbarOrgan()
     case 'jazz-organ':
@@ -198,17 +216,21 @@ export async function createInstrument(id: InstrumentId): Promise<InstrumentRunt
     case 'glass-organ':
       return createGlassOrgan()
     case 'folk-guitar':
-      return await createGuitarSampledVariant('folk-guitar', 'folk')
+      return await createExperimentalSampled('folk-guitar', createPluck)
     case 'clean-guitar':
-      return await createGuitarSampledVariant('clean-guitar', 'clean')
+      return await createExperimentalSampled('clean-guitar', createPluck)
     case 'jazz-guitar':
-      return await createGuitarSampledVariant('jazz-guitar', 'jazz')
+      return await createExperimentalSampled('jazz-guitar', createPluck)
     case 'rock-guitar':
-      return await createGuitarSampledVariant('rock-guitar', 'rock')
+      return await createExperimentalSampled('rock-guitar', createPluck)
     case 'ambient-guitar':
-      return await createGuitarSampledVariant('ambient-guitar', 'ambient')
+      return await createExperimentalSampled('ambient-guitar', createPluck)
     case 'flamenco-guitar':
-      return await createGuitarSampledVariant('flamenco-guitar', 'flamenco')
+      return await createExperimentalSampled('flamenco-guitar', createPluck)
+    case 'gm-muted-guitar':
+      return await createExperimentalSampled('gm-muted-guitar', createPluck)
+    case 'gm-distortion-guitar':
+      return await createExperimentalSampled('gm-distortion-guitar', createPluck)
     case 'bass-electric':
       return await createExperimentalSampled('bass-electric', createBass)
     case 'bassoon':
@@ -376,13 +398,12 @@ function createBass(): InstrumentRuntime {
 
 // ── Sampled instruments (lazy-loaded from bundled assets) ──────────────────
 //
-// Samples sourced from the nbrosowsky/tonejs-instruments project
-// and committed into `public/instrument-samples/` so the app doesn't depend on
-// any upstream CDN remaining online. Each call builds a Sampler from the
-// instrument's sample map; Tone interpolates between the sampled pitches to
-// cover the full piano range. If a fetch still fails (e.g. offline), the
-// caller falls through to a synth patch so the app never silently drops notes.
-// Sample license: CC-BY 3.0; see `public/instrument-samples/README.md`.
+// Samples are committed into `public/instrument-samples/` so the app doesn't
+// depend on any upstream CDN remaining online. Each call builds a Sampler from
+// the instrument's sample map; Tone interpolates between the sampled pitches to
+// cover the full piano range. If a fetch still fails (e.g. offline), the caller
+// falls through to a synth patch so the app never silently drops notes.
+// Sample license and attribution: see `public/instrument-samples/README.md`.
 
 const SAMPLE_BASE = `${import.meta.env.BASE_URL}instrument-samples/`
 const SAMPLE_LOAD_TIMEOUT_MS = 15_000
@@ -395,117 +416,104 @@ interface SampleSpec {
   volumeDb?: number
 }
 
-const PIANO_FULL_SAMPLE_FILES = [
-  'A1.mp3',
-  'A2.mp3',
-  'A3.mp3',
-  'A4.mp3',
-  'A5.mp3',
-  'A6.mp3',
-  'A7.mp3',
-  'As1.mp3',
-  'As2.mp3',
-  'As3.mp3',
-  'As4.mp3',
-  'As5.mp3',
-  'As6.mp3',
-  'As7.mp3',
-  'B1.mp3',
-  'B2.mp3',
-  'B3.mp3',
-  'B4.mp3',
-  'B5.mp3',
-  'B6.mp3',
-  'B7.mp3',
+const GM_FULL_RANGE_SAMPLE_FILES = [
+  'A0.mp3',
+  'Bb0.mp3',
+  'B0.mp3',
   'C1.mp3',
-  'C2.mp3',
-  'C3.mp3',
-  'C4.mp3',
-  'C5.mp3',
-  'C6.mp3',
-  'C7.mp3',
-  'C8.mp3',
-  'Cs1.mp3',
-  'Cs2.mp3',
-  'Cs3.mp3',
-  'Cs4.mp3',
-  'Cs5.mp3',
-  'Cs6.mp3',
-  'Cs7.mp3',
+  'Db1.mp3',
   'D1.mp3',
-  'D2.mp3',
-  'D3.mp3',
-  'D4.mp3',
-  'D5.mp3',
-  'D6.mp3',
-  'D7.mp3',
-  'Ds1.mp3',
-  'Ds2.mp3',
-  'Ds3.mp3',
-  'Ds4.mp3',
-  'Ds5.mp3',
-  'Ds6.mp3',
-  'Ds7.mp3',
+  'Eb1.mp3',
   'E1.mp3',
-  'E2.mp3',
-  'E3.mp3',
-  'E4.mp3',
-  'E5.mp3',
-  'E6.mp3',
-  'E7.mp3',
   'F1.mp3',
-  'F2.mp3',
-  'F3.mp3',
-  'F4.mp3',
-  'F5.mp3',
-  'F6.mp3',
-  'F7.mp3',
-  'Fs1.mp3',
-  'Fs2.mp3',
-  'Fs3.mp3',
-  'Fs4.mp3',
-  'Fs5.mp3',
-  'Fs6.mp3',
-  'Fs7.mp3',
+  'Gb1.mp3',
   'G1.mp3',
+  'Ab1.mp3',
+  'A1.mp3',
+  'Bb1.mp3',
+  'B1.mp3',
+  'C2.mp3',
+  'Db2.mp3',
+  'D2.mp3',
+  'Eb2.mp3',
+  'E2.mp3',
+  'F2.mp3',
+  'Gb2.mp3',
   'G2.mp3',
+  'Ab2.mp3',
+  'A2.mp3',
+  'Bb2.mp3',
+  'B2.mp3',
+  'C3.mp3',
+  'Db3.mp3',
+  'D3.mp3',
+  'Eb3.mp3',
+  'E3.mp3',
+  'F3.mp3',
+  'Gb3.mp3',
   'G3.mp3',
+  'Ab3.mp3',
+  'A3.mp3',
+  'Bb3.mp3',
+  'B3.mp3',
+  'C4.mp3',
+  'Db4.mp3',
+  'D4.mp3',
+  'Eb4.mp3',
+  'E4.mp3',
+  'F4.mp3',
+  'Gb4.mp3',
   'G4.mp3',
+  'Ab4.mp3',
+  'A4.mp3',
+  'Bb4.mp3',
+  'B4.mp3',
+  'C5.mp3',
+  'Db5.mp3',
+  'D5.mp3',
+  'Eb5.mp3',
+  'E5.mp3',
+  'F5.mp3',
+  'Gb5.mp3',
   'G5.mp3',
+  'Ab5.mp3',
+  'A5.mp3',
+  'Bb5.mp3',
+  'B5.mp3',
+  'C6.mp3',
+  'Db6.mp3',
+  'D6.mp3',
+  'Eb6.mp3',
+  'E6.mp3',
+  'F6.mp3',
+  'Gb6.mp3',
   'G6.mp3',
+  'Ab6.mp3',
+  'A6.mp3',
+  'Bb6.mp3',
+  'B6.mp3',
+  'C7.mp3',
+  'Db7.mp3',
+  'D7.mp3',
+  'Eb7.mp3',
+  'E7.mp3',
+  'F7.mp3',
+  'Gb7.mp3',
   'G7.mp3',
-  'Gs1.mp3',
-  'Gs2.mp3',
-  'Gs3.mp3',
-  'Gs4.mp3',
-  'Gs5.mp3',
-  'Gs6.mp3',
-  'Gs7.mp3',
+  'Ab7.mp3',
+  'A7.mp3',
+  'Bb7.mp3',
+  'B7.mp3',
+  'C8.mp3',
 ] as const
 
-const ORGAN_SAMPLE_FILES = [
-  'A1.mp3',
-  'A2.mp3',
-  'A3.mp3',
-  'A4.mp3',
-  'A5.mp3',
-  'C1.mp3',
-  'C2.mp3',
-  'C3.mp3',
-  'C4.mp3',
-  'C5.mp3',
-  'C6.mp3',
-  'Ds1.mp3',
-  'Ds2.mp3',
-  'Ds3.mp3',
-  'Ds4.mp3',
-  'Ds5.mp3',
-  'Fs1.mp3',
-  'Fs2.mp3',
-  'Fs3.mp3',
-  'Fs4.mp3',
-  'Fs5.mp3',
-] as const
+const FLAT_TO_SHARP: Record<string, string> = {
+  Db: 'C#',
+  Eb: 'D#',
+  Gb: 'F#',
+  Ab: 'G#',
+  Bb: 'A#',
+}
 
 // Filename convention: 'As3.mp3' = A#3, 'Cs4.mp3' = C#4 (lowercase 's' for
 // sharp since '#' isn't URL-safe). Target only the exact sharp pattern
@@ -513,7 +521,22 @@ const ORGAN_SAMPLE_FILES = [
 // instead of being silently mangled by a loose global replace.
 function filenameToNote(file: string): string {
   const raw = file.replace(/\.mp3$/, '')
-  return raw.replace(/^([A-G])s(\d)$/, '$1#$2')
+  const sharp = raw.replace(/^([A-G])s(\d)$/, '$1#$2')
+  return sharp.replace(/^([A-G]b)(\d)$/, (_, note: string, octave: string) => {
+    const normalized = FLAT_TO_SHARP[note]
+    return normalized ? `${normalized}${octave}` : `${note}${octave}`
+  })
+}
+
+function gmSpec(folder: string, release = 1, volumeDb = -6, attack?: number): SampleSpec {
+  const spec: SampleSpec = {
+    folder: `fluidr3/${folder}`,
+    files: GM_FULL_RANGE_SAMPLE_FILES,
+    release,
+    volumeDb,
+  }
+  if (attack !== undefined) spec.attack = attack
+  return spec
 }
 
 // Decoded sample buffers cached by folder/file so repeated Sampler construction
@@ -611,51 +634,17 @@ export async function preloadSampleBuffers(id: InstrumentId): Promise<void> {
 // Spec lookup for sampled instruments. Keeping the spec objects in one place
 // lets the preload path share exactly the same inputs as the Sampler path.
 const SAMPLED_SPECS: Partial<Record<InstrumentId, SampleSpec>> = {
-  'studio-grand': {
-    folder: 'piano',
-    files: PIANO_FULL_SAMPLE_FILES,
-    release: 1.15,
-    volumeDb: -4,
-  },
-  'warm-grand': {
-    folder: 'piano',
-    files: PIANO_FULL_SAMPLE_FILES,
-    release: 1.25,
-    volumeDb: -5,
-  },
-  'bright-grand': {
-    folder: 'piano',
-    files: PIANO_FULL_SAMPLE_FILES,
-    release: 1,
-    volumeDb: -4,
-  },
-  'room-grand': {
-    folder: 'piano',
-    files: PIANO_FULL_SAMPLE_FILES,
-    release: 1.4,
-    volumeDb: -5,
-  },
-  'pipe-organ': {
-    folder: 'organ',
-    files: ORGAN_SAMPLE_FILES,
-    attack: 0.01,
-    release: 0.9,
-    volumeDb: -5,
-  },
-  'cathedral-organ': {
-    folder: 'organ',
-    files: ORGAN_SAMPLE_FILES,
-    attack: 0.02,
-    release: 1.4,
-    volumeDb: -7,
-  },
-  'chapel-organ': {
-    folder: 'organ',
-    files: ORGAN_SAMPLE_FILES,
-    attack: 0.01,
-    release: 0.7,
-    volumeDb: -6,
-  },
+  'studio-grand': gmSpec('acoustic_grand_piano-mp3', 1, -6),
+  'warm-grand': gmSpec('bright_acoustic_piano-mp3', 1, -6),
+  'bright-grand': gmSpec('electric_grand_piano-mp3', 1, -6),
+  'room-grand': gmSpec('honkytonk_piano-mp3', 0.9, -6),
+  'gm-electric-piano-1': gmSpec('electric_piano_1-mp3', 1, -6),
+  'gm-electric-piano-2': gmSpec('electric_piano_2-mp3', 1, -6),
+  'pipe-organ': gmSpec('church_organ-mp3', 1, -7, 0.01),
+  'cathedral-organ': gmSpec('drawbar_organ-mp3', 0.8, -7, 0.01),
+  'chapel-organ': gmSpec('reed_organ-mp3', 1, -7, 0.01),
+  'gm-percussive-organ': gmSpec('percussive_organ-mp3', 0.6, -7, 0.005),
+  'gm-rock-organ': gmSpec('rock_organ-mp3', 0.8, -7, 0.005),
   upright: {
     folder: 'piano',
     files: ['A1.mp3', 'A2.mp3', 'A3.mp3', 'A4.mp3', 'A5.mp3', 'A6.mp3', 'A7.mp3', 'C8.mp3'],
@@ -1161,36 +1150,14 @@ const SAMPLED_SPECS: Partial<Record<InstrumentId, SampleSpec>> = {
   },
 }
 
-SAMPLED_SPECS['folk-guitar'] = {
-  ...SAMPLED_SPECS.guitar!,
-  release: 1.05,
-  volumeDb: -3,
-}
-SAMPLED_SPECS['clean-guitar'] = {
-  ...SAMPLED_SPECS['guitar-electric']!,
-  release: 0.75,
-  volumeDb: -4,
-}
-SAMPLED_SPECS['jazz-guitar'] = {
-  ...SAMPLED_SPECS['guitar-electric']!,
-  release: 0.9,
-  volumeDb: -5,
-}
-SAMPLED_SPECS['rock-guitar'] = {
-  ...SAMPLED_SPECS['guitar-electric']!,
-  release: 0.65,
-  volumeDb: -6,
-}
-SAMPLED_SPECS['ambient-guitar'] = {
-  ...SAMPLED_SPECS['guitar-electric']!,
-  release: 1.7,
-  volumeDb: -7,
-}
-SAMPLED_SPECS['flamenco-guitar'] = {
-  ...SAMPLED_SPECS['guitar-nylon']!,
-  release: 0.45,
-  volumeDb: -3,
-}
+SAMPLED_SPECS['folk-guitar'] = gmSpec('acoustic_guitar_steel-mp3', 0.8, -6)
+SAMPLED_SPECS['clean-guitar'] = gmSpec('electric_guitar_clean-mp3', 0.7, -6)
+SAMPLED_SPECS['jazz-guitar'] = gmSpec('electric_guitar_jazz-mp3', 0.8, -6)
+SAMPLED_SPECS['rock-guitar'] = gmSpec('overdriven_guitar-mp3', 0.6, -7)
+SAMPLED_SPECS['ambient-guitar'] = gmSpec('guitar_harmonics-mp3', 1.2, -7)
+SAMPLED_SPECS['flamenco-guitar'] = gmSpec('acoustic_guitar_nylon-mp3', 0.55, -6)
+SAMPLED_SPECS['gm-muted-guitar'] = gmSpec('electric_guitar_muted-mp3', 0.35, -6)
+SAMPLED_SPECS['gm-distortion-guitar'] = gmSpec('distortion_guitar-mp3', 0.6, -7)
 
 async function createViolin(): Promise<InstrumentRuntime> {
   try {
@@ -1306,112 +1273,6 @@ async function createGuitar(): Promise<InstrumentRuntime> {
     })
   } catch (err) {
     console.warn('Guitar samples unavailable, falling back to synth pluck', err)
-    return createPluck()
-  }
-}
-
-async function createPianoSampledVariant(
-  id: InstrumentId,
-  tone: 'studio' | 'warm' | 'bright' | 'room',
-): Promise<InstrumentRuntime> {
-  try {
-    return await createSampled(SAMPLED_SPECS[id]!, (s) => {
-      if (tone === 'warm') {
-        const filter = new Filter({ frequency: 2600, type: 'lowpass', rolloff: -12, Q: 0.2 })
-        const reverb = new Reverb({ decay: 1.6, wet: 0.18 })
-        s.chain(filter, reverb, getDestination())
-        return
-      }
-      if (tone === 'bright') {
-        const filter = new Filter({ frequency: 7200, type: 'lowpass', rolloff: -12, Q: 0.15 })
-        const reverb = new Reverb({ decay: 1.0, wet: 0.08 })
-        s.chain(filter, reverb, getDestination())
-        return
-      }
-      if (tone === 'room') {
-        const reverb = new Reverb({ decay: 2.8, wet: 0.28 })
-        s.chain(reverb, getDestination())
-        return
-      }
-      const reverb = new Reverb({ decay: 1.3, wet: 0.12 })
-      s.chain(reverb, getDestination())
-    })
-  } catch (err) {
-    console.warn(`${id} samples unavailable, falling back to Grand`, err)
-    return createPiano()
-  }
-}
-
-async function createOrganSampledVariant(
-  id: InstrumentId,
-  tone: 'pipe' | 'cathedral' | 'chapel',
-): Promise<InstrumentRuntime> {
-  try {
-    return await createSampled(SAMPLED_SPECS[id]!, (s) => {
-      if (tone === 'cathedral') {
-        const filter = new Filter({ frequency: 4100, type: 'lowpass', rolloff: -12, Q: 0.2 })
-        const reverb = new Reverb({ decay: 4.2, wet: 0.36 })
-        s.chain(filter, reverb, getDestination())
-        return
-      }
-      if (tone === 'chapel') {
-        const filter = new Filter({ frequency: 3200, type: 'lowpass', rolloff: -12, Q: 0.18 })
-        const reverb = new Reverb({ decay: 1.7, wet: 0.2 })
-        s.chain(filter, reverb, getDestination())
-        return
-      }
-      const reverb = new Reverb({ decay: 2.4, wet: 0.18 })
-      s.chain(reverb, getDestination())
-    })
-  } catch (err) {
-    console.warn(`${id} samples unavailable, falling back to handmade organ`, err)
-    return createDrawbarOrgan()
-  }
-}
-
-async function createGuitarSampledVariant(
-  id: InstrumentId,
-  tone: 'folk' | 'clean' | 'jazz' | 'rock' | 'ambient' | 'flamenco',
-): Promise<InstrumentRuntime> {
-  try {
-    return await createSampled(SAMPLED_SPECS[id]!, (s) => {
-      if (tone === 'folk') {
-        const filter = new Filter({ frequency: 4200, type: 'lowpass', rolloff: -12, Q: 0.2 })
-        const reverb = new Reverb({ decay: 1.35, wet: 0.12 })
-        s.chain(filter, reverb, getDestination())
-        return
-      }
-      if (tone === 'clean') {
-        const chorus = new Chorus(0.7, 2.4, 0.18).start()
-        const reverb = new Reverb({ decay: 1.2, wet: 0.1 })
-        s.chain(chorus, reverb, getDestination())
-        return
-      }
-      if (tone === 'jazz') {
-        const filter = new Filter({ frequency: 2100, type: 'lowpass', rolloff: -24, Q: 0.28 })
-        const reverb = new Reverb({ decay: 1.5, wet: 0.16 })
-        s.chain(filter, reverb, getDestination())
-        return
-      }
-      if (tone === 'rock') {
-        const drive = new Distortion(0.35)
-        const filter = new Filter({ frequency: 4600, type: 'lowpass', rolloff: -12, Q: 0.2 })
-        s.chain(drive, filter, getDestination())
-        return
-      }
-      if (tone === 'ambient') {
-        const chorus = new Chorus(0.45, 1.5, 0.42).start()
-        const delay = new FeedbackDelay('8n', 0.28)
-        const reverb = new Reverb({ decay: 4.4, wet: 0.38 })
-        s.chain(chorus, delay, reverb, getDestination())
-        return
-      }
-      const filter = new Filter({ frequency: 6200, type: 'lowpass', rolloff: -12, Q: 0.12 })
-      const reverb = new Reverb({ decay: 0.75, wet: 0.08 })
-      s.chain(filter, reverb, getDestination())
-    })
-  } catch (err) {
-    console.warn(`${id} samples unavailable, falling back to synth pluck`, err)
     return createPluck()
   }
 }
