@@ -55,6 +55,10 @@ interface MenuProps {
 }
 
 function MenuView(props: MenuProps) {
+  const isExperimental = (description: string): boolean => description.startsWith('Experimental')
+  const cleanDescription = (description: string): string =>
+    description.replace(/^Experimental\s*·\s*/, '')
+
   return (
     <div
       ref={(el) => props.registerEl(el)}
@@ -83,7 +87,12 @@ function MenuView(props: MenuProps) {
               <span class="instrument-item-dot" aria-hidden="true"></span>
               <span class="instrument-item-body">
                 <span class="instrument-item-name">{inst.name}</span>
-                <span class="instrument-item-sub">{inst.description}</span>
+                <span class="instrument-item-sub">
+                  {isExperimental(inst.description) && (
+                    <span class="instrument-item-badge">Experimental</span>
+                  )}
+                  <span>{cleanDescription(inst.description)}</span>
+                </span>
               </span>
               <span class="instrument-item-check" aria-hidden="true" innerHTML={icons.check()} />
             </button>
