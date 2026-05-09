@@ -27,6 +27,16 @@ export type InstrumentId =
   | 'violin'
   | 'flute'
   | 'guitar'
+  | 'studio-grand'
+  | 'warm-grand'
+  | 'bright-grand'
+  | 'room-grand'
+  | 'pipe-organ'
+  | 'cathedral-organ'
+  | 'chapel-organ'
+  | 'drawbar-organ'
+  | 'jazz-organ'
+  | 'glass-organ'
   | 'bass-electric'
   | 'bassoon'
   | 'cello'
@@ -81,6 +91,16 @@ export const INSTRUMENTS: readonly InstrumentInfo[] = [
   { id: 'organ', name: 'Organ', description: 'Experimental · sustained keys', sampled: true },
   { id: 'harmonium', name: 'Harmonium', description: 'Experimental · reed organ', sampled: true },
   { id: 'xylophone', name: 'Xylophone', description: 'Experimental · bright mallet', sampled: true },
+  { id: 'studio-grand', name: 'Studio Grand', description: 'Experimental · full sampled piano', sampled: true },
+  { id: 'warm-grand', name: 'Warm Grand', description: 'Experimental · soft sampled piano', sampled: true },
+  { id: 'bright-grand', name: 'Bright Grand', description: 'Experimental · clear sampled piano', sampled: true },
+  { id: 'room-grand', name: 'Room Grand', description: 'Experimental · spacious sampled piano', sampled: true },
+  { id: 'pipe-organ', name: 'Pipe Organ', description: 'Experimental · sampled organ', sampled: true },
+  { id: 'cathedral-organ', name: 'Cathedral Organ', description: 'Experimental · large sampled organ', sampled: true },
+  { id: 'chapel-organ', name: 'Chapel Organ', description: 'Experimental · intimate sampled organ', sampled: true },
+  { id: 'drawbar-organ', name: 'Drawbar Organ', description: 'Experimental · handmade organ', sampled: false },
+  { id: 'jazz-organ', name: 'Jazz Organ', description: 'Experimental · handmade organ', sampled: false },
+  { id: 'glass-organ', name: 'Glass Organ', description: 'Experimental · handmade organ', sampled: false },
 ]
 
 export interface InstrumentRuntime {
@@ -143,6 +163,26 @@ export async function createInstrument(id: InstrumentId): Promise<InstrumentRunt
       return await createFlute()
     case 'guitar':
       return await createGuitar()
+    case 'studio-grand':
+      return await createPianoSampledVariant('studio-grand', 'studio')
+    case 'warm-grand':
+      return await createPianoSampledVariant('warm-grand', 'warm')
+    case 'bright-grand':
+      return await createPianoSampledVariant('bright-grand', 'bright')
+    case 'room-grand':
+      return await createPianoSampledVariant('room-grand', 'room')
+    case 'pipe-organ':
+      return await createOrganSampledVariant('pipe-organ', 'pipe')
+    case 'cathedral-organ':
+      return await createOrganSampledVariant('cathedral-organ', 'cathedral')
+    case 'chapel-organ':
+      return await createOrganSampledVariant('chapel-organ', 'chapel')
+    case 'drawbar-organ':
+      return createDrawbarOrgan()
+    case 'jazz-organ':
+      return createJazzOrgan()
+    case 'glass-organ':
+      return createGlassOrgan()
     case 'bass-electric':
       return await createExperimentalSampled('bass-electric', createBass)
     case 'bassoon':
@@ -329,6 +369,118 @@ interface SampleSpec {
   volumeDb?: number
 }
 
+const PIANO_FULL_SAMPLE_FILES = [
+  'A1.mp3',
+  'A2.mp3',
+  'A3.mp3',
+  'A4.mp3',
+  'A5.mp3',
+  'A6.mp3',
+  'A7.mp3',
+  'As1.mp3',
+  'As2.mp3',
+  'As3.mp3',
+  'As4.mp3',
+  'As5.mp3',
+  'As6.mp3',
+  'As7.mp3',
+  'B1.mp3',
+  'B2.mp3',
+  'B3.mp3',
+  'B4.mp3',
+  'B5.mp3',
+  'B6.mp3',
+  'B7.mp3',
+  'C1.mp3',
+  'C2.mp3',
+  'C3.mp3',
+  'C4.mp3',
+  'C5.mp3',
+  'C6.mp3',
+  'C7.mp3',
+  'C8.mp3',
+  'Cs1.mp3',
+  'Cs2.mp3',
+  'Cs3.mp3',
+  'Cs4.mp3',
+  'Cs5.mp3',
+  'Cs6.mp3',
+  'Cs7.mp3',
+  'D1.mp3',
+  'D2.mp3',
+  'D3.mp3',
+  'D4.mp3',
+  'D5.mp3',
+  'D6.mp3',
+  'D7.mp3',
+  'Ds1.mp3',
+  'Ds2.mp3',
+  'Ds3.mp3',
+  'Ds4.mp3',
+  'Ds5.mp3',
+  'Ds6.mp3',
+  'Ds7.mp3',
+  'E1.mp3',
+  'E2.mp3',
+  'E3.mp3',
+  'E4.mp3',
+  'E5.mp3',
+  'E6.mp3',
+  'E7.mp3',
+  'F1.mp3',
+  'F2.mp3',
+  'F3.mp3',
+  'F4.mp3',
+  'F5.mp3',
+  'F6.mp3',
+  'F7.mp3',
+  'Fs1.mp3',
+  'Fs2.mp3',
+  'Fs3.mp3',
+  'Fs4.mp3',
+  'Fs5.mp3',
+  'Fs6.mp3',
+  'Fs7.mp3',
+  'G1.mp3',
+  'G2.mp3',
+  'G3.mp3',
+  'G4.mp3',
+  'G5.mp3',
+  'G6.mp3',
+  'G7.mp3',
+  'Gs1.mp3',
+  'Gs2.mp3',
+  'Gs3.mp3',
+  'Gs4.mp3',
+  'Gs5.mp3',
+  'Gs6.mp3',
+  'Gs7.mp3',
+] as const
+
+const ORGAN_SAMPLE_FILES = [
+  'A1.mp3',
+  'A2.mp3',
+  'A3.mp3',
+  'A4.mp3',
+  'A5.mp3',
+  'C1.mp3',
+  'C2.mp3',
+  'C3.mp3',
+  'C4.mp3',
+  'C5.mp3',
+  'C6.mp3',
+  'Ds1.mp3',
+  'Ds2.mp3',
+  'Ds3.mp3',
+  'Ds4.mp3',
+  'Ds5.mp3',
+  'Fs1.mp3',
+  'Fs2.mp3',
+  'Fs3.mp3',
+  'Fs4.mp3',
+  'Fs5.mp3',
+] as const
+
 // Filename convention: 'As3.mp3' = A#3, 'Cs4.mp3' = C#4 (lowercase 's' for
 // sharp since '#' isn't URL-safe). Target only the exact sharp pattern
 // `<A-G>s<digit>` so malformed filenames fail loud at Sampler setup
@@ -433,6 +585,51 @@ export async function preloadSampleBuffers(id: InstrumentId): Promise<void> {
 // Spec lookup for sampled instruments. Keeping the spec objects in one place
 // lets the preload path share exactly the same inputs as the Sampler path.
 const SAMPLED_SPECS: Partial<Record<InstrumentId, SampleSpec>> = {
+  'studio-grand': {
+    folder: 'piano',
+    files: PIANO_FULL_SAMPLE_FILES,
+    release: 1.15,
+    volumeDb: -4,
+  },
+  'warm-grand': {
+    folder: 'piano',
+    files: PIANO_FULL_SAMPLE_FILES,
+    release: 1.25,
+    volumeDb: -5,
+  },
+  'bright-grand': {
+    folder: 'piano',
+    files: PIANO_FULL_SAMPLE_FILES,
+    release: 1,
+    volumeDb: -4,
+  },
+  'room-grand': {
+    folder: 'piano',
+    files: PIANO_FULL_SAMPLE_FILES,
+    release: 1.4,
+    volumeDb: -5,
+  },
+  'pipe-organ': {
+    folder: 'organ',
+    files: ORGAN_SAMPLE_FILES,
+    attack: 0.01,
+    release: 0.9,
+    volumeDb: -5,
+  },
+  'cathedral-organ': {
+    folder: 'organ',
+    files: ORGAN_SAMPLE_FILES,
+    attack: 0.02,
+    release: 1.4,
+    volumeDb: -7,
+  },
+  'chapel-organ': {
+    folder: 'organ',
+    files: ORGAN_SAMPLE_FILES,
+    attack: 0.01,
+    release: 0.7,
+    volumeDb: -6,
+  },
   upright: {
     folder: 'piano',
     files: ['A1.mp3', 'A2.mp3', 'A3.mp3', 'A4.mp3', 'A5.mp3', 'A6.mp3', 'A7.mp3', 'C8.mp3'],
@@ -1003,6 +1200,45 @@ function createDigitalPiano(): InstrumentRuntime {
   return wrapPolySynth(synth)
 }
 
+function createDrawbarOrgan(): InstrumentRuntime {
+  const synth = new PolySynth(Synth, {
+    oscillator: { type: 'fatsquare', count: 3, spread: 9 },
+    envelope: { attack: 0.003, decay: 0.05, sustain: 1, release: 0.16 },
+  })
+  synth.volume.value = -8
+  const filter = new Filter({ frequency: 3400, type: 'lowpass', rolloff: -12, Q: 0.25 })
+  const chorus = new Chorus(0.65, 2.2, 0.28).start()
+  synth.chain(filter, chorus, getDestination())
+  return wrapPolySynth(synth)
+}
+
+function createJazzOrgan(): InstrumentRuntime {
+  const synth = new PolySynth(FMSynth, {
+    harmonicity: 2,
+    modulationIndex: 3,
+    oscillator: { type: 'sine' },
+    envelope: { attack: 0.002, decay: 0.08, sustain: 0.9, release: 0.18 },
+    modulation: { type: 'square' },
+    modulationEnvelope: { attack: 0.002, decay: 0.05, sustain: 0.45, release: 0.12 },
+  })
+  synth.volume.value = -5
+  const chorus = new Chorus(0.9, 3.2, 0.38).start()
+  synth.chain(chorus, getDestination())
+  return wrapPolySynth(synth)
+}
+
+function createGlassOrgan(): InstrumentRuntime {
+  const synth = new PolySynth(Synth, {
+    oscillator: { type: 'fatsine', count: 2, spread: 5 },
+    envelope: { attack: 0.025, decay: 0.2, sustain: 0.82, release: 0.55 },
+  })
+  synth.volume.value = -9
+  const filter = new Filter({ frequency: 5200, type: 'lowpass', rolloff: -12, Q: 0.2 })
+  const reverb = new Reverb({ decay: 2.2, wet: 0.22 })
+  synth.chain(filter, reverb, getDestination())
+  return wrapPolySynth(synth)
+}
+
 async function createGuitar(): Promise<InstrumentRuntime> {
   try {
     // Guitar has a dense sample map (every semitone A2..G#4), so interpolation
@@ -1014,6 +1250,65 @@ async function createGuitar(): Promise<InstrumentRuntime> {
   } catch (err) {
     console.warn('Guitar samples unavailable, falling back to synth pluck', err)
     return createPluck()
+  }
+}
+
+async function createPianoSampledVariant(
+  id: InstrumentId,
+  tone: 'studio' | 'warm' | 'bright' | 'room',
+): Promise<InstrumentRuntime> {
+  try {
+    return await createSampled(SAMPLED_SPECS[id]!, (s) => {
+      if (tone === 'warm') {
+        const filter = new Filter({ frequency: 2600, type: 'lowpass', rolloff: -12, Q: 0.2 })
+        const reverb = new Reverb({ decay: 1.6, wet: 0.18 })
+        s.chain(filter, reverb, getDestination())
+        return
+      }
+      if (tone === 'bright') {
+        const filter = new Filter({ frequency: 7200, type: 'lowpass', rolloff: -12, Q: 0.15 })
+        const reverb = new Reverb({ decay: 1.0, wet: 0.08 })
+        s.chain(filter, reverb, getDestination())
+        return
+      }
+      if (tone === 'room') {
+        const reverb = new Reverb({ decay: 2.8, wet: 0.28 })
+        s.chain(reverb, getDestination())
+        return
+      }
+      const reverb = new Reverb({ decay: 1.3, wet: 0.12 })
+      s.chain(reverb, getDestination())
+    })
+  } catch (err) {
+    console.warn(`${id} samples unavailable, falling back to Grand`, err)
+    return createPiano()
+  }
+}
+
+async function createOrganSampledVariant(
+  id: InstrumentId,
+  tone: 'pipe' | 'cathedral' | 'chapel',
+): Promise<InstrumentRuntime> {
+  try {
+    return await createSampled(SAMPLED_SPECS[id]!, (s) => {
+      if (tone === 'cathedral') {
+        const filter = new Filter({ frequency: 4100, type: 'lowpass', rolloff: -12, Q: 0.2 })
+        const reverb = new Reverb({ decay: 4.2, wet: 0.36 })
+        s.chain(filter, reverb, getDestination())
+        return
+      }
+      if (tone === 'chapel') {
+        const filter = new Filter({ frequency: 3200, type: 'lowpass', rolloff: -12, Q: 0.18 })
+        const reverb = new Reverb({ decay: 1.7, wet: 0.2 })
+        s.chain(filter, reverb, getDestination())
+        return
+      }
+      const reverb = new Reverb({ decay: 2.4, wet: 0.18 })
+      s.chain(reverb, getDestination())
+    })
+  } catch (err) {
+    console.warn(`${id} samples unavailable, falling back to handmade organ`, err)
+    return createDrawbarOrgan()
   }
 }
 
