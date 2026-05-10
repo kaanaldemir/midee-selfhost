@@ -57,10 +57,12 @@ export class ResonanceVisualizer {
     const rollHeight = viewport.rollHeight
     if (rollHeight <= 0) return
 
-    // A faint, slow studio wash keeps the empty roll from feeling flat.
+    // A slow studio wash keeps the experimental branch visibly different even
+    // before the first note lands.
     const breath = 0.5 + 0.5 * Math.sin(time * 0.45)
     g.rect(0, 0, canvasWidth, rollHeight)
-    g.fill({ color: theme.nowLineGlow, alpha: 0.008 + breath * 0.006 })
+    g.fill({ color: theme.nowLineGlow, alpha: 0.02 + breath * 0.014 })
+    this.drawAmbientBands(g, viewport, theme, rollHeight, time)
 
     if (activeByPitch.size > 0) {
       this.drawActivePitchColumns(g, activeByPitch, viewport, rollHeight)
@@ -85,6 +87,30 @@ export class ResonanceVisualizer {
     this.glow.clear()
   }
 
+  private drawAmbientBands(
+    g: Graphics,
+    viewport: Viewport,
+    theme: Theme,
+    rollHeight: number,
+    time: number,
+  ): void {
+    const { canvasWidth } = viewport.config
+    const colors = theme.trackColors.length > 0 ? theme.trackColors : [theme.nowLineGlow]
+    for (let i = 0; i < 4; i++) {
+      const phase = time * (0.18 + i * 0.045) + i * 1.7
+      const bandHeight = 34 + i * 9
+      const y = rollHeight * (0.16 + i * 0.19) + Math.sin(phase) * 18 - bandHeight / 2
+      const width = canvasWidth * (0.86 + i * 0.1)
+      const x = canvasWidth * 0.07 - Math.sin(phase * 0.7) * 42
+
+      g.roundRect(x, y, width, bandHeight, bandHeight / 2)
+      g.fill({
+        color: colors[i % colors.length]!,
+        alpha: 0.016 + 0.008 * Math.sin(phase + 0.6),
+      })
+    }
+  }
+
   private drawActivePitchColumns(
     g: Graphics,
     activeByPitch: ReadonlyMap<number, number>,
@@ -99,9 +125,9 @@ export class ResonanceVisualizer {
       const coreW = Math.max(2, width * 0.22)
 
       g.roundRect(cx - columnW / 2, 0, columnW, rollHeight, columnW / 2)
-      g.fill({ color, alpha: 0.026 })
-      g.roundRect(cx - coreW / 2, 0, coreW, rollHeight, coreW / 2)
       g.fill({ color, alpha: 0.055 })
+      g.roundRect(cx - coreW / 2, 0, coreW, rollHeight, coreW / 2)
+      g.fill({ color, alpha: 0.11 })
     }
   }
 
@@ -131,9 +157,9 @@ export class ResonanceVisualizer {
     const h = Math.min(160, rollHeight - y)
 
     g.roundRect(x, y, w, h, 22)
-    g.fill({ color, alpha: 0.038 })
+    g.fill({ color, alpha: 0.075 })
     g.rect(x, rollHeight - 2, w, 2)
-    g.fill({ color, alpha: 0.12 })
+    g.fill({ color, alpha: 0.2 })
   }
 
   private drawPulse(g: Graphics, pulse: ResonancePulse, rollHeight: number, time: number): void {
@@ -146,10 +172,10 @@ export class ResonanceVisualizer {
     const y = pulse.y - rise - height / 2
 
     g.roundRect(pulse.x - width / 2, y, width, height, height / 2)
-    g.fill({ color: pulse.color, alpha: 0.1 * fade * shimmer })
+    g.fill({ color: pulse.color, alpha: 0.22 * fade * shimmer })
 
     const lineWidth = pulse.width * (1.5 + u * 6.5)
     g.rect(pulse.x - lineWidth / 2, Math.min(pulse.y - rise, rollHeight - 2), lineWidth, 1.5)
-    g.fill({ color: pulse.color, alpha: 0.22 * fade })
+    g.fill({ color: pulse.color, alpha: 0.38 * fade })
   }
 }

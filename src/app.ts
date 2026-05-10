@@ -1763,10 +1763,10 @@ const instrumentIndexStore = indexPersisted(
   INSTRUMENTS.length,
 )
 const particleIndexStore = indexPersisted(
-  'midee.particleIndex',
+  'midee.experimentalParticleIndex',
   Math.max(
     0,
-    PARTICLE_STYLES.findIndex((s) => s.id === 'embers'),
+    PARTICLE_STYLES.findIndex((s) => s.id === 'aurora'),
   ),
   PARTICLE_STYLES.length,
 )
