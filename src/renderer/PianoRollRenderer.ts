@@ -9,6 +9,7 @@ import { LiveNoteRenderer } from './LiveNoteRenderer'
 import { NoteRenderer } from './NoteRenderer'
 import { ParticleSystem } from './ParticleSystem'
 import type { RenderContext, RenderLayer } from './RenderLayer'
+import { ResonanceVisualizer } from './ResonanceVisualizer'
 import { darkTheme, getTrackColor, type Theme } from './theme'
 import { Viewport, visibleNoteRange } from './viewport'
 
@@ -69,6 +70,7 @@ export class PianoRollRenderer {
   private keyboardRenderer!: KeyboardRenderer
   private liveNoteRenderer!: LiveNoteRenderer
   private particles!: ParticleSystem
+  private resonance!: ResonanceVisualizer
   private beatGrid!: BeatGrid
   private nowLineGraphics!: Graphics
   private backgroundGraphics!: Graphics
@@ -158,11 +160,15 @@ export class PianoRollRenderer {
     const stage = this.app.stage
 
     // Layer order (bottom → top):
-    // 1. background  2. beat-grid  3. notes  4. live-notes  5. now-line  6. keyboard  7. particles
+    // 1. background  2. resonance  3. beat-grid  4. notes  5. live-notes
+    // 6. now-line  7. keyboard  8. particles
 
     this.backgroundGraphics = new Graphics()
     this.backgroundGraphics.label = 'background'
     stage.addChild(this.backgroundGraphics)
+
+    this.resonance = new ResonanceVisualizer()
+    stage.addChild(this.resonance.container)
 
     this.beatGrid = new BeatGrid()
     stage.addChild(this.beatGrid.graphics)
@@ -255,6 +261,7 @@ export class PianoRollRenderer {
     this.noteRenderer.setTracks([])
     this.noteRenderer.clear()
     this.liveNoteRenderer.clear()
+    this.resonance.clear()
     this.particles.clear()
     this.prevActive.clear()
     this.currActive.clear()
@@ -434,6 +441,7 @@ export class PianoRollRenderer {
           if (!prev.has(key)) {
             // Note-on: full initial burst + schedule the first sustained puff.
             this.particles.burst(cx, nowLineY, trackColor, w)
+            this.resonance.pulse(note.pitch, cx, nowLineY, trackColor, w)
             this.scheduledEmitNext.set(key, currentTime + SUSTAIN_INITIAL_DELAY_SEC)
           } else {
             // Held note: release a small puff each tick to keep the plume alive.
@@ -535,6 +543,7 @@ export class PianoRollRenderer {
     }
 
     this.keyboardRenderer.drawActiveKeys(activeColors, this.viewport)
+    this.resonance.update(activeColors, this.viewport, this.theme, dt, currentTime)
     this.particles.update(dt)
 
     if (this.externalLayers.length > 0) {
@@ -586,6 +595,7 @@ export class PianoRollRenderer {
     const cx = this.viewport.pitchToX(pitch) + w / 2
     const color = this.theme.trackColors[0] ?? this.theme.nowLine
     this.particles.burst(cx, this.viewport.nowLineY, color, w)
+    this.resonance.pulse(pitch, cx, this.viewport.nowLineY, color, w)
   }
 
   setLiveNoteStore(store: LiveNoteStore): void {
@@ -651,6 +661,7 @@ export class PianoRollRenderer {
   pauseAutoRender(): void {
     this.exportMode = true
     this.app.ticker.stop()
+    this.resonance.clear()
     this.particles.clear()
     this.prevActive.clear()
     this.currActive.clear()

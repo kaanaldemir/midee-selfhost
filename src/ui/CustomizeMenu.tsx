@@ -708,6 +708,22 @@ const PARTICLE_GLYPHS: Record<string, string> = {
     <path d="M12 4l1 4 4 1-4 1-1 4-1-4-4-1 4-1 1-4z"/>
     <path d="M19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" opacity="0.7"/>
   </svg>`,
+  aurora: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+    <path d="M3 16c3-7 6 5 9-2s6-1 9-7" opacity="0.95"/>
+    <path d="M3 20c4-5 7 2 11-3 3-4 5-2 7-5" opacity="0.5"/>
+  </svg>`,
+  comets: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+    <path d="M5 19l9-9"/>
+    <path d="M4 14l5-5"/>
+    <path d="M10 20l5-5"/>
+    <circle cx="16" cy="8" r="2.6" fill="currentColor" stroke="none"/>
+  </svg>`,
+  fireflies: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <circle cx="7" cy="16" r="1.3"/>
+    <circle cx="13" cy="11" r="1.8" opacity="0.85"/>
+    <circle cx="18" cy="7" r="1.1" opacity="0.75"/>
+    <path d="M6 8c3 3 8 4 12 8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.45"/>
+  </svg>`,
   none: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
     <circle cx="12" cy="12" r="8" opacity="0.5"/>
     <line x1="6" y1="18" x2="18" y2="6" opacity="0.7"/>

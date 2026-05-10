@@ -4,7 +4,15 @@ import { Container, Sprite, Texture } from 'pixi.js'
 // is style-agnostic. Wind is a *single directional* vector picked at construction
 // — particles within a session all drift the same way, which reads as one
 // coherent breeze rather than contradictory swirls.
-export type ParticleStyle = 'sparks' | 'embers' | 'bloom' | 'sparkle' | 'none'
+export type ParticleStyle =
+  | 'sparks'
+  | 'embers'
+  | 'bloom'
+  | 'sparkle'
+  | 'aurora'
+  | 'comets'
+  | 'fireflies'
+  | 'none'
 
 export interface ParticleStyleInfo {
   id: ParticleStyle
@@ -18,6 +26,9 @@ export const PARTICLE_STYLES: readonly ParticleStyleInfo[] = [
   { id: 'embers', name: 'Embers' },
   { id: 'bloom', name: 'Bloom' },
   { id: 'sparkle', name: 'Sparkle' },
+  { id: 'aurora', name: 'Aurora' },
+  { id: 'comets', name: 'Comets' },
+  { id: 'fireflies', name: 'Fireflies' },
   { id: 'none', name: 'Off' },
 ]
 
@@ -48,8 +59,8 @@ interface StyleConfig {
 // down roughly 2× from the previous pass — particles should float, not fly.
 const STYLES: Record<ParticleStyle, StyleConfig> = {
   sparks: {
-    count: 14,
-    sustainCount: 2,
+    count: 24,
+    sustainCount: 4,
     speedMin: 0.9,
     speedMax: 2.6,
     lifeMin: 0.45,
@@ -69,8 +80,8 @@ const STYLES: Record<ParticleStyle, StyleConfig> = {
     blend: 'add',
   },
   embers: {
-    count: 18,
-    sustainCount: 2,
+    count: 34,
+    sustainCount: 5,
     speedMin: 0.4,
     speedMax: 1.3,
     lifeMin: 1.2,
@@ -94,21 +105,21 @@ const STYLES: Record<ParticleStyle, StyleConfig> = {
   // past their welcome; now each mote lives just long enough to register
   // without polluting the roll with persistent glow.
   bloom: {
-    count: 4,
-    sustainCount: 1,
+    count: 9,
+    sustainCount: 2,
     speedMin: 0.12,
     speedMax: 0.45,
     lifeMin: 1.0,
     lifeMax: 1.7,
-    sizeMin: 6,
-    sizeMax: 12,
+    sizeMin: 8,
+    sizeMax: 18,
     gravity: -0.008,
     drag: 0.08,
     upwardArc: 0.65,
     windStrength: 0.9,
     windFlutter: 0.2,
     turbulence: 2.4,
-    alphaScale: 0.32,
+    alphaScale: 0.42,
     fadeCurve: 'swell',
     hueJitter: 3,
     valueJitter: 0.05,
@@ -116,8 +127,8 @@ const STYLES: Record<ParticleStyle, StyleConfig> = {
   },
   // Sparkle: crisp, glinty, with real character — deep pulse, varied rate.
   sparkle: {
-    count: 16,
-    sustainCount: 2,
+    count: 28,
+    sustainCount: 4,
     speedMin: 0.1,
     speedMax: 0.85,
     lifeMin: 0.8,
@@ -134,6 +145,69 @@ const STYLES: Record<ParticleStyle, StyleConfig> = {
     fadeCurve: 'flash',
     hueJitter: 8,
     valueJitter: 0.14,
+    blend: 'add',
+  },
+  aurora: {
+    count: 12,
+    sustainCount: 2,
+    speedMin: 0.05,
+    speedMax: 0.32,
+    lifeMin: 1.8,
+    lifeMax: 3.4,
+    sizeMin: 12,
+    sizeMax: 28,
+    gravity: -0.004,
+    drag: 0.1,
+    upwardArc: 0.8,
+    windStrength: 1.1,
+    windFlutter: 0.4,
+    turbulence: 3.4,
+    alphaScale: 0.34,
+    fadeCurve: 'swell',
+    hueJitter: 18,
+    valueJitter: 0.1,
+    blend: 'add',
+  },
+  comets: {
+    count: 12,
+    sustainCount: 2,
+    speedMin: 1.4,
+    speedMax: 3.8,
+    lifeMin: 0.55,
+    lifeMax: 1.15,
+    sizeMin: 2.2,
+    sizeMax: 7.5,
+    gravity: 0.025,
+    drag: 0.006,
+    upwardArc: 0.38,
+    windStrength: 3.4,
+    windFlutter: 0.18,
+    turbulence: 0.8,
+    alphaScale: 1,
+    fadeCurve: 'ease-out',
+    hueJitter: 10,
+    valueJitter: 0.1,
+    blend: 'add',
+  },
+  fireflies: {
+    count: 26,
+    sustainCount: 4,
+    speedMin: 0.12,
+    speedMax: 0.85,
+    lifeMin: 2.2,
+    lifeMax: 4.2,
+    sizeMin: 1.1,
+    sizeMax: 4.8,
+    gravity: -0.01,
+    drag: 0.06,
+    upwardArc: 1.0,
+    windStrength: 1.6,
+    windFlutter: 0.55,
+    turbulence: 2.8,
+    alphaScale: 0.85,
+    fadeCurve: 'twinkle',
+    hueJitter: 22,
+    valueJitter: 0.18,
     blend: 'add',
   },
   // 'Off' preset — burst() early-outs before consuming from the pool.
@@ -178,7 +252,7 @@ interface Particle {
   turbAmp: number
 }
 
-const POOL_SIZE = 1024
+const POOL_SIZE = 3072
 const TEXTURE_RESOLUTION = 64
 
 export class ParticleSystem {
